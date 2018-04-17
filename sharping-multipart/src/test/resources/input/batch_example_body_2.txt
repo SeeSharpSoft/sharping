@@ -1,0 +1,2 @@
+GET /greeting?name=Trevor HTTP/1.1
+Host: host

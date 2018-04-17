@@ -1,0 +1,20 @@
+--batch
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+
+GET /hello HTTP/1.1
+Host: host
+
+--batch
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+
+GET /greeting?name=Trevor HTTP/1.1
+Host: host
+
+--batch
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+
+GET /greeting?name=Peter&name=Lustig HTTP/1.1
+--batch--

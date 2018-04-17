@@ -1,0 +1,2 @@
+GET /hello HTTP/1.1
+Host: host

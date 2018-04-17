@@ -1,0 +1,6 @@
+PUT /example/application/resource HTTP/1.1
+Host: example.org
+Content-Type: image/jpg
+Content-Length: 123456
+
+{jpg image data}
