@@ -36,8 +36,8 @@ public class BatchRequestController {
      * @param servletRequest the original request
      * @param servletResponse the original response
      * @return a batch response
-     * @throws IOException
-     * @throws ServletException
+     * @throws IOException if an input or output error occurs while processing the request
+     * @throws ServletException if the servlet request cannot be handled
      */
     @RequestMapping(value =  "${" + PROPERTIES_ENDPOINT_PATH + ":" + PROPERTIES_ENDPOINT_DEFAULT + "}", method = RequestMethod.POST)
     public BatchResponse batch(@RequestBody BatchRequest batchRequest,

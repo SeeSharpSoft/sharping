@@ -18,8 +18,8 @@ public interface BatchRequestService {
      * @param servletRequest the original request
      * @param servletResponse the original response
      * @return a batch response
-     * @throws IOException
-     * @throws ServletException
+     * @throws IOException if an input or output error occurs while processing the request
+     * @throws ServletException if the servlet request cannot be handled
      */
     BatchResponse process(BatchRequest batchRequest,
                           BatchRequestProperties properties,

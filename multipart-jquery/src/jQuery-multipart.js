@@ -24,7 +24,7 @@
         aBody.push('--' + sBoundary + '--');
 
         return aBody.join('\r\n');
-    }
+    };
 
     var unbatch = function (sData) {
         sData = sData.replace("\r", "");
@@ -47,7 +47,7 @@
         });
 
         return jQuery.when.apply(jQuery, aResults);
-    }
+    };
 
     $.extend($, {
 
