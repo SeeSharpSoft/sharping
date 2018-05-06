@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.multipart;
 
 import net.seesharpsoft.spring.multipart.batch.BatchMediaType;
-import net.seesharpsoft.spring.util.SharpIO;
+import net.seesharpsoft.util.SharpIO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -26,12 +26,9 @@ import java.util.stream.Collectors;
 public class MultipartRfc2046MessageConverter implements HttpMessageConverter {
 
     protected static final String BOUNDARY_BOUNDARY = "--";
-
     protected static final Charset DEFAULT_CHARSET = Charset.forName("UTF8");
-
     protected static final MediaType DEFAULT_BODY_MEDIATYPE = new MediaType("text", "plain", Charset.forName("US-ASCII"));
-
-    protected static final String CRLF = "\r\n";
+    protected static final String CRLF = "\n";
 
     @Override
     public boolean canRead(Class clazz, MediaType mediaType) {
@@ -131,9 +128,13 @@ public class MultipartRfc2046MessageConverter implements HttpMessageConverter {
         return BOUNDARY_BOUNDARY + boundary;
     }
 
+    protected String formatMessageInput(String input) {
+        return input == null ? "" : input.replaceAll("\r\n", "\n");
+    }
+
     private String readBody(HttpInputMessage inputMessage) throws IOException {
         byte[] buffer = SharpIO.readAsByteArray(inputMessage.getBody());
-        return new String(buffer, DEFAULT_CHARSET);
+        return formatMessageInput(new String(buffer, DEFAULT_CHARSET));
     }
 
 

@@ -3,6 +3,7 @@ package net.seesharpsoft.spring.multipart.batch;
 import net.seesharpsoft.spring.multipart.MultipartEntity;
 import net.seesharpsoft.spring.multipart.MultipartMessage;
 import net.seesharpsoft.spring.multipart.MultipartRfc2046MessageConverter;
+import net.seesharpsoft.spring.multipart.MultipartEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;

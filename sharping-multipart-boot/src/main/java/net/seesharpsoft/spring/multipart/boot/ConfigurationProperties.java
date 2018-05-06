@@ -7,7 +7,7 @@ import static net.seesharpsoft.spring.multipart.boot.ConfigurationProperties.PRO
 @org.springframework.boot.context.properties.ConfigurationProperties(PROPERTIES_ROOT)
 public class ConfigurationProperties {
 
-    public static final String PROPERTIES_ROOT = "net.seesharpsoft.spring.multipart";
+    public static final String PROPERTIES_ROOT = "sharping.multipart";
     public static final String PROPERTIES_ENDPOINT_PATH = PROPERTIES_ROOT + ".endpoint";
     public static final String PROPERTIES_ENDPOINT_DEFAULT = "/batch";
 

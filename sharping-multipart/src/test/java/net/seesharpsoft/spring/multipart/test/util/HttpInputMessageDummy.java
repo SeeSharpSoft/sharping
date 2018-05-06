@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.multipart.test.util;
 
 import net.seesharpsoft.spring.util.ByteArrayServletInputStream;
-import net.seesharpsoft.spring.util.SharpIO;
+import net.seesharpsoft.util.SharpIO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 

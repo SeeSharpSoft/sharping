@@ -1,8 +1,7 @@
 package net.seesharpsoft.spring.multipart;
 
-
 import net.seesharpsoft.spring.multipart.test.util.HttpInputMessageDummy;
-import net.seesharpsoft.spring.util.SharpIO;
+import net.seesharpsoft.util.SharpIO;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +19,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-
 public class MultipartRfc2046MessageConverterUT {
 
     private Map<String, Integer> fileName2NoOfPartsMap = new HashMap() {{
@@ -36,7 +34,9 @@ public class MultipartRfc2046MessageConverterUT {
     }
 
     private byte[] readResource(String fileName) throws IOException {
-        return SharpIO.readAsByteArray(this.getClass().getClassLoader().getResourceAsStream(fileName));
+        byte[] bytes = SharpIO.readAsByteArray(this.getClass().getClassLoader().getResourceAsStream(fileName));
+        bytes = SharpIO.bytesToStream(bytes).filter(content -> content != 13).collect(SharpIO.toByteArray());
+        return bytes;
     }
 
     private HttpHeaders createHttpHeaders(String boundary) {
@@ -52,7 +52,7 @@ public class MultipartRfc2046MessageConverterUT {
         String headerString = new String(readResource(fileName), StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
-        Arrays.stream(headerString.split("\r\n"))
+        Arrays.stream(headerString.split("\n"))
                 .map(headerLine -> headerLine.split(":"))
                 .forEach(header -> headers.add(header[0].trim(), header[1].trim()));
 

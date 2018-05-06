@@ -4,7 +4,7 @@
 
     <groupId>net.seesharpsoft.spring</groupId>
     <artifactId>sharping-parent</artifactId>
-    <version>0.6.1-SNAPSHOT</version>
+    <version>0.7.2-SNAPSHOT</version>
     <modules>
         <module>sharping-multipart</module>
         <module>sharping-multipart-example</module>
@@ -12,6 +12,7 @@
         <module>sharping-multipart-boot-example</module>
         <module>sharping-core</module>
         <module>sharping-data</module>
+        <module>sharping-suite</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -45,6 +46,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring.boot.version>1.5.12.RELEASE</spring.boot.version>
+        <hibernate.jpa.2_1.api>1.0.2.Final</hibernate.jpa.2_1.api>
     </properties>
 
     <dependencyManagement>

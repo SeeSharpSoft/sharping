@@ -2,6 +2,7 @@ package net.seesharpsoft.spring.multipart.boot.demo.controller;
 
 import net.seesharpsoft.spring.multipart.boot.demo.entity.Person;
 import net.seesharpsoft.spring.multipart.boot.demo.repository.PersonRepository;
+import net.seesharpsoft.spring.multipart.boot.demo.entity.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;

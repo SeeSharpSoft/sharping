@@ -10,6 +10,6 @@ public class AutostartEnabledCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
-        return conditionContext.getEnvironment().getProperty(String.format("%s.mode", PROPERTIES_ROOT), RequestProcessingMode.class, RequestProcessingMode.None) != RequestProcessingMode.None;
+        return conditionContext.getEnvironment().getProperty(String.format("%s.mode", ConfigurationProperties.PROPERTIES_ROOT), RequestProcessingMode.class, RequestProcessingMode.None) != RequestProcessingMode.None;
     }
 }

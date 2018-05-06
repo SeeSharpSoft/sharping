@@ -1,3 +1,3 @@
-net.seesharpsoft.spring.multipart:
+sharping.multipart:
   mode: LocalDispatch
   endpoint: /my/own/multipart/endpoint
