@@ -165,7 +165,7 @@ public class Lexer<T> {
         return initialState;
     }
 
-    public List<Tokenizer.TokenInfo<T>> tokenize(String input) throws ParseException {
+    public synchronized List<Tokenizer.TokenInfo<T>> tokenize(String input) throws ParseException {
         currentState = getInitialState();
 
         return tokenizer.tokenize(input);
