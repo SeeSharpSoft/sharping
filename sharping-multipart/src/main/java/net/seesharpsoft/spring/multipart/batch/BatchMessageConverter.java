@@ -3,9 +3,9 @@ package net.seesharpsoft.spring.multipart.batch;
 import net.seesharpsoft.spring.multipart.MultipartEntity;
 import net.seesharpsoft.spring.multipart.MultipartMessage;
 import net.seesharpsoft.spring.multipart.MultipartRfc2046MessageConverter;
-import net.seesharpsoft.spring.multipart.MultipartEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
@@ -70,17 +70,29 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
     }
 
     private void writeResponseStatus(OutputStreamWriter writer, BatchResponse.Entity entry) throws IOException {
+        HttpStatus status = entry.getStatus();
+
+        if (status == null) {
+            status = HttpStatus.UNPROCESSABLE_ENTITY;
+        }
+
         writer.write("HTTP/1.1 ");
-        writer.write(entry.getStatus().value() + "");
+        writer.write(status.value() + "");
         writer.write(" ");
-        writer.write(entry.getStatus().getReasonPhrase());
+        writer.write(status.getReasonPhrase());
         writer.write(CRLF);
     }
 
     private void writePartContentHeader(OutputStreamWriter writer, HttpHeaders headers, int contentLength) throws IOException {
+        MediaType contentType = headers.getContentType();
+
+        if (contentType == null) {
+            contentType = MediaType.ALL;
+        }
+
         writer.write(HttpHeaders.CONTENT_TYPE);
         writer.write(": ");
-        writer.write(headers.getContentType().toString());
+        writer.write(contentType.toString());
         writer.write(CRLF);
         writer.write(HttpHeaders.CONTENT_LENGTH);
         writer.write(": ");
