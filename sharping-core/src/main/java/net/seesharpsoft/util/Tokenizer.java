@@ -70,11 +70,14 @@ public class Tokenizer<T>
 
     private Map<T, Token<T>> tokenInfos;
     private List<Validator> validators;
+    private Pattern trimPatternStart;
+    private Pattern trimPatternEnd;
 
     public Tokenizer()
     {
         tokenInfos = new HashMap<>();
         validators = new ArrayList<>();
+        setTrimPattern("\r| ");
     }
 
     protected void add(Token<T> token) {
@@ -112,20 +115,34 @@ public class Tokenizer<T>
         return validators.isEmpty() || validators.stream().anyMatch(validator -> validator.validate(token, sequence));
     }
 
+    public void setTrimPattern(String regexTrimPattern) {
+        if (regexTrimPattern == null || regexTrimPattern.isEmpty()) {
+            this.trimPatternStart = null;
+            this.trimPatternEnd = null;
+        } else {
+            this.trimPatternStart = Pattern.compile(String.format("^(%s)*", regexTrimPattern));
+            this.trimPatternEnd = Pattern.compile(String.format("(%s)*$", regexTrimPattern));
+        }
+    }
+
     protected String trim(String input) {
         if (input == null) {
             return "";
         }
 
-        return input
-                .replaceAll("\\r\\n", "\n")
-                .replaceFirst("^(\r| )*", "")
-                .replaceFirst("(\r| )*$", "");
+        if (trimPatternStart != null) {
+            input = trimPatternStart.matcher(input).replaceFirst("");
+        }
+        if (trimPatternEnd != null) {
+            input = trimPatternEnd.matcher(input).replaceFirst("");
+        }
+
+        return input;
     }
 
     protected <T> List<TokenInfo<T>> tokenize(String str, Collection<Token<T>> tokenCollection) throws ParseException {
         List<TokenInfo<T>> tokenInfos = new LinkedList<>();
-        String trimmedString = trim(str);
+        String trimmedString = trim(str.replaceAll("\r\n", "\n"));
         while (!trimmedString.equals(""))
         {
             boolean match = false;
