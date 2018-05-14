@@ -2,17 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.seesharpsoft.spring</groupId>
+    <groupId>net.seesharpsoft.sharping</groupId>
     <artifactId>sharping-parent</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.9.0</version>
     <modules>
-        <module>sharping-multipart</module>
-        <module>sharping-multipart-example</module>
-        <module>sharping-multipart-boot</module>
-        <module>sharping-multipart-boot-example</module>
-        <module>sharping-core</module>
-        <module>sharping-data</module>
-        <module>sharping-suite</module>
+        <module>sharping-commons</module>
+        <module>sharping-spring-data</module>
+        <module>sharping-spring-multipart</module>
+        <module>sharping-spring-multipart-boot</module>
+        <module>sharping-spring-suite</module>
+        <module>sharping-spring-multipart-example</module>
+        <module>sharping-spring-multipart-boot-example</module>
     </modules>
     <packaging>pom</packaging>
 
