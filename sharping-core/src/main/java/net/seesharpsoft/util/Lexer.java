@@ -29,11 +29,9 @@ public class Lexer<T> {
         }
 
         public void addNextState(State state, List<T> tokens) {
+            Objects.requireNonNull(state, "state must not be null!");
             if (hasDuplicateTokens(tokens)) {
                 throw new IllegalArgumentException(String.format("duplicate tokenInfos: %s - %s", tokens, nextStates.values()));
-            }
-            if (state == null) {
-                throw new IllegalArgumentException("state must not be null!");
             }
             if (nextStates.containsKey(state)) {
                 nextStates.get(state).addAll(tokens);
@@ -83,6 +81,7 @@ public class Lexer<T> {
         private List<Tokenizer.TokenInfo<T>> tokenInfos;
 
         private StateInfo(State state) {
+            Objects.requireNonNull(state, "state must not be null!");
             this.state = state;
             tokenInfos = new ArrayList<>();
         }
@@ -142,6 +141,7 @@ public class Lexer<T> {
     }
 
     public State addState(String name) {
+        Objects.requireNonNull(name, "state name must not be null!");
         State state = new State(name);
         states.add(state);
         if (getInitialState() == null) {
@@ -151,10 +151,12 @@ public class Lexer<T> {
     }
 
     public State getState(String name) {
+        Objects.requireNonNull(name, "state name must not be null!");
         return states.stream().filter(state -> state.name.equals(name)).findFirst().orElse(null);
     }
 
     public void setInitialState(State state) {
+        Objects.requireNonNull(state, "state must not be null!");
         if (!states.contains(state)) {
             throw new IllegalArgumentException(String.format("state '%s' is not defined in this Lexer instance", state.toString()));
         }
