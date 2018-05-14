@@ -18,8 +18,15 @@ public class Tokenizer<T>
 
         public Token(T token, Pattern regex)
         {
+            Objects.requireNonNull(token, "token must be not null!");
+            Objects.requireNonNull(regex, "regex must be not null!");
             this.regex = regex;
             this.token = token;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s=%s (%s)", token, regex.pattern(), regex.flags());
         }
 
         @Override
@@ -28,12 +35,14 @@ public class Tokenizer<T>
                 return false;
             }
             Token otherToken = (Token)other;
-            return Objects.equals(this.token, otherToken.token) && Objects.equals(this.regex, otherToken.regex);
+            return Objects.equals(this.token, otherToken.token) &&
+                    Objects.equals(this.regex.pattern(), otherToken.regex.pattern()) &&
+                    Objects.equals(this.regex.flags(), otherToken.regex.flags());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.token, this.regex);
+            return Objects.hash(this.token, this.regex.pattern(), this.regex.flags());
         }
     }
 
@@ -68,43 +77,62 @@ public class Tokenizer<T>
         }
     }
 
-    private Map<T, Token<T>> tokenInfos;
+    private Map<T, Token<T>> tokenMap;
     private List<Validator> validators;
     private Pattern trimPatternStart;
     private Pattern trimPatternEnd;
+    private boolean caseInsensitive = false;
 
     public Tokenizer()
     {
-        tokenInfos = new HashMap<>();
+        tokenMap = new HashMap<>();
         validators = new ArrayList<>();
         setTrimPattern("\r| ");
     }
 
-    protected void add(Token<T> token) {
-        tokenInfos.put(token.token, token);
+    public boolean getCaseInsensitive() {
+        return this.caseInsensitive;
     }
 
-    public void add(T token, String regex, boolean caseSensitive) {
-        add(new Token(token, Pattern.compile((caseSensitive ? "" : "(?i)") + "^(" + regex + ")")));
+    public Tokenizer<T> setCaseInsensitive(boolean caseInsensitive) {
+        this.caseInsensitive = caseInsensitive;
+        return this;
     }
 
-    public void add(T token, String regex) {
-        this.add(token, regex, false);
+    protected Tokenizer<T> add(Token<T> token) {
+        tokenMap.put(token.token, token);
+        return this;
     }
 
-    protected Token<T> getTokenInfo(T token) {
-        return tokenInfos.get(token);
+    protected Token<T> createToken(T token, String regex, boolean caseInsensitive) {
+        return new Token(token, Pattern.compile("^(" + regex + ")", caseInsensitive ? Pattern.CASE_INSENSITIVE : 0));
     }
 
-    public boolean addValidator(Validator validator) {
-        if (validator == null) {
-            return false;
-        }
-        return validators.add(validator);
+    public Tokenizer<T> add(T token, String regex, boolean caseInsensitive) {
+        return add(createToken(token, regex, caseInsensitive));
     }
 
-    public boolean removeValidator(Validator validator) {
-        return validators.remove(validator);
+    public Tokenizer<T> add(T token, String regex) {
+        return this.add(token, regex, getCaseInsensitive());
+    }
+
+    protected Token<T> getToken(T token) {
+        return tokenMap.get(token);
+    }
+
+    public Tokenizer<T> addValidator(Validator validator) {
+        Objects.requireNonNull(validator, "validator must be not null!");
+        validators.add(validator);
+        return this;
+    }
+
+    public Tokenizer<T> removeValidator(Validator validator) {
+        validators.remove(validator);
+        return this;
+    }
+
+    public boolean hasValidator(Validator validator) {
+        return validators.contains(validator);
     }
 
     protected List<Validator> getValidators() {
@@ -115,7 +143,7 @@ public class Tokenizer<T>
         return validators.isEmpty() || validators.stream().anyMatch(validator -> validator.validate(token, sequence));
     }
 
-    public void setTrimPattern(String regexTrimPattern) {
+    public Tokenizer<T> setTrimPattern(String regexTrimPattern) {
         if (regexTrimPattern == null || regexTrimPattern.isEmpty()) {
             this.trimPatternStart = null;
             this.trimPatternEnd = null;
@@ -123,6 +151,7 @@ public class Tokenizer<T>
             this.trimPatternStart = Pattern.compile(String.format("^(%s)*", regexTrimPattern));
             this.trimPatternEnd = Pattern.compile(String.format("(%s)*$", regexTrimPattern));
         }
+        return this;
     }
 
     protected String trim(String input) {
@@ -142,7 +171,7 @@ public class Tokenizer<T>
 
     protected <T> List<TokenInfo<T>> tokenize(String str, Collection<Token<T>> tokenCollection) throws ParseException {
         List<TokenInfo<T>> tokenInfos = new LinkedList<>();
-        String trimmedString = trim(str.replaceAll("\r\n", "\n"));
+        String trimmedString = trim(str == null ? null : str.replaceAll("\r\n", "\n"));
         while (!trimmedString.equals(""))
         {
             boolean match = false;
@@ -168,7 +197,7 @@ public class Tokenizer<T>
     }
 
     public List<TokenInfo<T>> tokenize(String str) throws ParseException {
-        return tokenize(str, tokenInfos.values());
+        return tokenize(str, tokenMap.values());
     }
 }
 

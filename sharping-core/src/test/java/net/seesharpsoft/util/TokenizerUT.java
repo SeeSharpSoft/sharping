@@ -41,7 +41,7 @@ public class TokenizerUT {
 
         tokenizer.add(0, "abc");
 
-        assertThat(tokenizer.getTokenInfo(1), nullValue());
+        assertThat(tokenizer.getToken(1), nullValue());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class TokenizerUT {
 
         tokenizer.add(0, "abc");
 
-        assertThat(tokenizer.getTokenInfo(0), notNullValue());
+        assertThat(tokenizer.getToken(0), notNullValue());
     }
 
     @Test
@@ -111,33 +111,65 @@ public class TokenizerUT {
     }
 
     @Test
-    public void removeValidator_should_return_false_for_null_argument() {
+    public void removeValidator_should_work_with_null_argument_and_return_tokenizer() {
         Tokenizer<Integer> tokenizer = new Tokenizer();
 
-        assertThat(tokenizer.removeValidator(null), is(false));
+        assertThat(tokenizer.removeValidator(null), is(tokenizer));
     }
 
     @Test
-    public void removeValidator_should_return_false_for_non_existing_validator() {
+    public void removeValidator_should_work_for_non_existing_validator_and_return_tokenizer() {
         Tokenizer<Integer> tokenizer = new Tokenizer();
 
-        assertThat(tokenizer.removeValidator(new ValidatorDummy(true)), is(false));
+        assertThat(tokenizer.removeValidator(new ValidatorDummy(true)), is(tokenizer));
     }
 
     @Test
-    public void addValidator_should_add_a_validator_and_return_true() {
+    public void addValidator_should_add_a_validator_and_return_tokenizer() {
         Tokenizer<Integer> tokenizer = new Tokenizer();
 
         Tokenizer.Validator validator = new ValidatorDummy(true);
-        assertThat(tokenizer.addValidator(validator), is(true));
-        assertThat(tokenizer.removeValidator(validator), is(true));
+        assertThat(tokenizer.addValidator(validator), is(tokenizer));
+        assertThat(tokenizer.removeValidator(validator), is(tokenizer));
     }
 
     @Test
-    public void addValidator_should_return_false_for_null_argument() {
+    public void addValidator_should_throw_NullPointerException_with_null_argument() {
         Tokenizer<Integer> tokenizer = new Tokenizer();
 
-        assertThat(tokenizer.addValidator(null), is(false));
+        boolean nullPointerException = false;
+        try {
+            tokenizer.addValidator(null);
+        } catch (NullPointerException exc) {
+            nullPointerException = true;
+        }
+        assertThat(nullPointerException, is(true));
+    }
+
+    @Test
+    public void hasValidator_should_work_with_null_argument_and_return_false() {
+        Tokenizer<Integer> tokenizer = new Tokenizer();
+
+        assertThat(tokenizer.hasValidator(null), is(false));
+    }
+
+    @Test
+    public void hasValidator_should_return_false_for_non_existing_validator() {
+        Tokenizer<Integer> tokenizer = new Tokenizer();
+
+        Tokenizer.Validator validator = new ValidatorDummy(true);
+
+        assertThat(tokenizer.hasValidator(validator), is(false));
+    }
+
+    @Test
+    public void hasValidator_should_return_true_for_existing_validator() {
+        Tokenizer<Integer> tokenizer = new Tokenizer();
+
+        Tokenizer.Validator validator = new ValidatorDummy(true);
+        tokenizer.addValidator(validator);
+
+        assertThat(tokenizer.hasValidator(validator), is(true));
     }
 
     @Test

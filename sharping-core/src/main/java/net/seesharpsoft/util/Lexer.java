@@ -140,6 +140,14 @@ public class Lexer<T> {
         this.tokenizer.addValidator(new TokenValidator());
     }
 
+    public Lexer() {
+        this(new Tokenizer<>());
+    }
+
+    protected Tokenizer<T> getTokenizer() {
+        return this.tokenizer;
+    }
+
     public State addState(String name) {
         Objects.requireNonNull(name, "state name must not be null!");
         State state = new State(name);
@@ -195,23 +203,18 @@ public class Lexer<T> {
         return parseStates(tokenize(input));
     }
 
-    /**
-     * Experimental.
-     * @param resourceName
-     */
-    public void initStates(String resourceName, Function<String, T> tokenResolver) {
+    public void init(InputStream is, Function<String, T> tokenResolver) throws IOException {
         String lexerStates = null;
-        try (InputStream is = ClassLoader.getSystemResourceAsStream(resourceName)) {
-            lexerStates = SharpIO.readAsString(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        lexerStates = SharpIO.readAsString(is);
+
         Tokenizer<Integer> stateTokenizer = new Tokenizer();
-        stateTokenizer.add(0, "[a-z\\_]+\\:", true);
-        stateTokenizer.add(1, "[A-Z\\_]+", true);
-        stateTokenizer.add(2, "\\|", true);
-        stateTokenizer.add(3, "\\:[a-z\\_]+", true);
-        stateTokenizer.add(4, "\\n", true);
+        stateTokenizer.add(0, "[a-z\\_]+:");
+        stateTokenizer.add(1, "[0-9A-Z\\_]+");
+        stateTokenizer.add(2, "\\|");
+        stateTokenizer.add(3, ":[0-9a-z\\_]+");
+        stateTokenizer.add(4, "\\n");
+        stateTokenizer.add(5, "=.+?(\\n|$)");
 
         List<Tokenizer.TokenInfo<Integer>> tokenInfos = null;
         try {
@@ -222,7 +225,8 @@ public class Lexer<T> {
 
         Lexer.State lastState = null;
         String name = null;
-        List<T> currentTokens = new ArrayList<>();
+        List<T> currentTokens = null;
+        T currentToken = null;
         for (Tokenizer.TokenInfo<Integer> tokenInfo : tokenInfos) {
             switch (tokenInfo.token) {
                 case 0:
@@ -231,26 +235,50 @@ public class Lexer<T> {
                     if (lastState == null) {
                         lastState = addState(name);
                     }
-                    currentTokens.clear();
+                    currentTokens = new ArrayList<>();
                     break;
                 case 1:
-                    currentTokens.add(tokenResolver.apply(tokenInfo.sequence));
+                    currentToken = tokenResolver.apply(tokenInfo.sequence);
                     break;
                 case 3:
+                    currentTokens.add(currentToken);
                     name = tokenInfo.sequence.substring(1);
                     Lexer.State nextState = getState(name);
                     if (nextState == null) {
                         nextState = addState(name);
                     }
                     lastState.addNextState(nextState, currentTokens);
+                    currentTokens = null;
                     break;
                 case 2:
+                    currentTokens.add(currentToken);
+                    break;
                 case 4:
+                    break;
+                case 5:
+                    this.tokenizer.add(currentToken, tokenInfo.sequence.substring(1).replaceFirst("\n$", ""));
                     break;
                 default:
                     throw new UnhandledSwitchCaseException(tokenInfo.token);
             }
-
         }
+    }
+
+    public void init(String fileName, boolean isResource, Function<String, T> tokenResolver) throws IOException {
+        try (InputStream is = SharpIO.createInputStream(fileName, isResource)) {
+            this.init(is, tokenResolver);
+        }
+    }
+
+    public void init(String fileName, boolean isResource) throws IOException {
+        this.init(fileName, isResource, sequence -> (T)sequence);
+    }
+
+    public void init(String fileName, Function<String, T> tokenResolver) throws IOException {
+        this.init(fileName, false, tokenResolver);
+    }
+
+    public void init(String fileName) throws IOException {
+        this.init(fileName, false);
     }
 }

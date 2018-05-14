@@ -29,9 +29,10 @@ public class SharpIO {
     }
 
     public static byte[] readAsByteArray(InputStream stream) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        readFromIn2Out(stream, buffer);
-        return buffer.toByteArray();
+        try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            readFromIn2Out(stream, buffer);
+            return buffer.toByteArray();
+        }
     }
 
     public static String readAsString(InputStream stream) throws IOException {
@@ -39,13 +40,27 @@ public class SharpIO {
     }
 
     public static String readAsString(InputStream stream, Charset charset) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        readFromIn2Out(stream, buffer);
-        return buffer.toString(charset.name());
+        try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            readFromIn2Out(stream, buffer);
+            return buffer.toString(charset.name());
+        }
+    }
+
+    public static InputStream createInputStream(String fileName, boolean isResource) throws IOException {
+        if (isResource) {
+            return SharpIO.class.getResourceAsStream(fileName);
+        }
+        return Files.newInputStream(Paths.get(fileName));
+    }
+
+    public static InputStream createInputStream(String fileName) throws IOException {
+        return createInputStream(fileName, false);
     }
 
     public static String readAsString(String fileName, Charset charset) throws IOException {
-        return readAsString(Files.newInputStream(Paths.get(fileName)), charset);
+        try(InputStream fileInputStream = createInputStream(fileName)) {
+            return readAsString(fileInputStream, charset);
+        }
     }
 
     public static String readAsString(String fileName) throws IOException {

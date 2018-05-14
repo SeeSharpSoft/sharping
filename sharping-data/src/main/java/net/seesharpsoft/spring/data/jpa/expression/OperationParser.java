@@ -34,6 +34,7 @@ public class OperationParser {
 
     private static Tokenizer<Token> createTokenizer(Dialect dialect) {
         Tokenizer<Token> tokenizer = new Tokenizer();
+        tokenizer.setCaseInsensitive(true);
         for (Token token : Token.values()) {
             String pattern = dialect.getRegexPattern(token);
             if (pattern != null && !pattern.isEmpty()) {
