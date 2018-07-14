@@ -4,12 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -97,6 +99,20 @@ public class SharpIO {
                     return list1;
                 },
                 arrayList -> byteArrayToPrimitives(arrayList.toArray(new Byte[arrayList.size()]))
+        );
+    }
+
+    public static <A, T> Collector<A, ?, T[]> toArray(Class<T> clazz) {
+        return Collector.of(
+                () -> new ArrayList<>(),
+                (arrayList, value) -> {
+                    arrayList.add(value);
+                },
+                (list1, list2) -> {
+                    Collections.copy(list1, list2);
+                    return list1;
+                },
+                arrayList -> arrayList.toArray((T[])Array.newInstance(clazz, arrayList.size()))
         );
     }
 }

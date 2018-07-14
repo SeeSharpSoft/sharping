@@ -1,8 +1,6 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.util.Pair;
-import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +8,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 
 public class Dialects {
 
@@ -42,9 +42,10 @@ public class Dialects {
         );
         dialect.generateOperatorTokenPattern();
         dialect.addTokenPatterns(
-                Pair.of(OperationParser.Token.METHOD, "startswith|endswith|substring"),
-                Pair.of(OperationParser.Token.UNARY_OPERATOR, "not"),
-                Pair.of(OperationParser.Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring)[^ (),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.METHOD, "startswith|endswith|substring"),
+                Pair.of(Token.UNARY_OPERATOR, "not"),
+                Pair.of(Token.NULL, "null"),
+                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|null)[^ (),\\[\\]]+|\\[.+?\\]")
         );
         dialect.addOperators(
                 Pair.of("substring", Operators.IS_SUBSTRING),
@@ -75,10 +76,11 @@ public class Dialects {
                 Pair.of("!", Operators.NOT)
         );
         dialect.addTokenPatterns(
-                Pair.of(OperationParser.Token.OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
-                Pair.of(OperationParser.Token.METHOD, ""),
-                Pair.of(OperationParser.Token.UNARY_OPERATOR, "[!]"),
-                Pair.of(OperationParser.Token.OPERAND, "'.+?'|[^ !(),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
+                Pair.of(Token.METHOD, ""),
+                Pair.of(Token.UNARY_OPERATOR, "[!]"),
+                Pair.of(Token.NULL, "null"),
+                Pair.of(Token.OPERAND, "'.+?'|(?!null)[^ !(),\\[\\]]+|\\[.+?\\]")
         );
         JAVA = dialect;
     }
@@ -86,16 +88,18 @@ public class Dialects {
     public static class Base implements Dialect {
 
         private Map<String, Operator> operatorMap;
-        private Map<OperationParser.Token, String> tokenPatternMap;
+        private Map<Token, String> tokenPatternMap;
+        private Parser parser;
 
         public Base() {
             this.operatorMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
             this.tokenPatternMap = new HashMap<>();
+            this.parser = new Parser(this);
 
             addTokenPatterns(
-                    Pair.of(OperationParser.Token.METHOD_PARAMETER_SEPARATOR, ","),
-                    Pair.of(OperationParser.Token.BRACKET_OPEN, "\\("),
-                    Pair.of(OperationParser.Token.BRACKET_CLOSE, "\\)")
+                    Pair.of(Token.METHOD_PARAMETER_SEPARATOR, ","),
+                    Pair.of(Token.BRACKET_OPEN, "\\("),
+                    Pair.of(Token.BRACKET_CLOSE, "\\)")
             );
         }
 
@@ -104,82 +108,31 @@ public class Dialects {
             return operatorMap.get(sequence);
         }
 
-        public void addOperator(String sequence, Operator operator) {
+        protected void addOperator(String sequence, Operator operator) {
             this.operatorMap.put(sequence, operator);
         }
 
-        public void addOperators(Pair<String, Operator>... operators) {
+        protected void addOperators(Pair<String, Operator>... operators) {
             Arrays.stream(operators).forEach(pair -> addOperator(pair.getFirst(), pair.getSecond()));
         }
 
-        public void removeOperator(String sequence) {
-            this.operatorMap.remove(sequence);
-        }
-
-        public void removeOperators(String... operators) {
-            Arrays.stream(operators).forEach(operator -> removeOperator(operator));
-        }
-
-        public void clearOperators() {
-            this.operatorMap.clear();
-        }
-
         @Override
-        public String getRegexPattern(OperationParser.Token token) {
+        public String getRegexPattern(Token token) {
             return tokenPatternMap.get(token);
         }
 
-        @Override
-        public Operand parseOperand(String value, ConversionService conversionService) {
-            Assert.notNull(value, "value must not be null!");
-            OperandType type = OperandType.parse(value);
-            if (type == null) {
-                return new Operand(value, Operand.Type.PATH);
-            }
-            return new Operand(type.convert(conversionService, value), Operand.Type.OBJECT, type.getJavaType());
-        }
-
-        public void addTokenPattern(OperationParser.Token token, String pattern) {
+        protected void addTokenPattern(Token token, String pattern) {
             this.tokenPatternMap.put(token, pattern);
         }
 
-        public void addTokenPatterns(Pair<OperationParser.Token, String>... tokenPatterns) {
+        protected void addTokenPatterns(Pair<Token, String>... tokenPatterns) {
             Arrays.stream(tokenPatterns).forEach(pair -> addTokenPattern(pair.getFirst(), pair.getSecond()));
         }
 
-        public void removeTokenPattern(OperationParser.Token token) {
-            this.tokenPatternMap.remove(token);
-        }
-
-        public void removeOperators(OperationParser.Token... tokens) {
-            Arrays.stream(tokens).forEach(token -> removeTokenPattern(token));
-        }
-
-        public void clearTokenPatterns() {
-            this.tokenPatternMap.clear();
-        }
-
-        public void generateOperatorTokenPattern() {
-            addTokenPattern(OperationParser.Token.OPERATOR, String.join("|",
+        protected void generateOperatorTokenPattern() {
+            addTokenPattern(Token.OPERATOR, String.join("|",
                     this.operatorMap.keySet().stream().map(key -> Pattern.quote(key)).collect(Collectors.toList()))
             );
-        }
-
-        public Dialect clone() {
-            Dialects.Base result = new Dialects.Base();
-            result.addOperators(
-                    this.operatorMap.entrySet().stream()
-                    .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
-                    .collect(Collectors.toList())
-                    .toArray(new Pair[0])
-            );
-            result.addTokenPatterns(
-                    this.tokenPatternMap.entrySet().stream()
-                    .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
-                    .collect(Collectors.toList())
-                    .toArray(new Pair[0])
-            );
-            return result;
         }
     }
 }

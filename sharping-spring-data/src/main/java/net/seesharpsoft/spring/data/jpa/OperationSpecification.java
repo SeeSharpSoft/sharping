@@ -1,6 +1,5 @@
 package net.seesharpsoft.spring.data.jpa;
 
-import net.seesharpsoft.spring.data.jpa.expression.Operand;
 import net.seesharpsoft.spring.data.jpa.expression.Operation;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
@@ -23,7 +22,7 @@ public class OperationSpecification implements Specification {
 
     @Override
     public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder cb) {
-        Expression expression = getOperation().getOperator().getExpression(root, query, cb, (Operand[])getOperation().getOperands().toArray());
+        Expression expression = getOperation().asExpression(root, query, cb);
         Assert.isInstanceOf(Predicate.class, expression);
         return (Predicate)expression;
     }

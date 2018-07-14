@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.data.jpa;
 
-import net.seesharpsoft.spring.data.jpa.expression.BinaryOperation;
+import net.seesharpsoft.spring.data.jpa.expression.Operands;
+import net.seesharpsoft.spring.data.jpa.expression.Operations;
 import net.seesharpsoft.spring.data.jpa.expression.Operators;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,8 +42,7 @@ public class ODataOperationSpecificationConverterUT {
     @Test
     public void converter_should_parse_simple_expression() {
         Specification result = converter.convert("a eq 1");
-        assertThat(result, equalTo(new OperationSpecification(
-                new BinaryOperation("a", Operators.EQUALS, 1))));
+        assertThat(result, equalTo(new OperationSpecification(Operations.equals(Operands.asReference("a"), Operands.from(1)))));
     }
 
 }

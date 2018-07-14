@@ -4,31 +4,65 @@ import net.seesharpsoft.UnhandledSwitchCaseException;
 import net.seesharpsoft.commons.util.Lexer;
 import net.seesharpsoft.commons.util.Tokenizer;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 
 import java.text.ParseException;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.regex.Pattern;
 
-import static net.seesharpsoft.spring.data.jpa.expression.OperationParser.Token.*;
+import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
+import static net.seesharpsoft.spring.data.jpa.expression.Dialect.Token.*;
 
-public class OperationParser {
+public class Parser {
 
-    public enum Token {
-        OPERAND,
-        OPERATOR,
-        METHOD,
-        METHOD_PARAMETER_SEPARATOR,
-        UNARY_OPERATOR,
-        BRACKET_OPEN,
-        BRACKET_CLOSE;
+    enum Primitive {
+        NULL("null", void.class, source -> null),
+        BOOLEAN("true|false", boolean.class, null),
+        INTEGER("[-+]?[0-9]+", Integer.class, null),
+        GUID("[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}", UUID.class, null),
+        STRING("'.+?'", String.class, source -> source.substring(1, source.length() - 1)),
+        DOUBLE("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", double.class, null),
+        DATE("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", LocalDate.class, null),
+        DATETIME("(datetime')?[0-9]{4}[-][0-9]{2}[-][0-9]{2}[T ][0-9]{2}[:][0-9]{2}[:][0-9]{2,4}(Z|[+-][0-9]{4})?'?", LocalDateTime.class, source -> source.startsWith("datetime'") ? source.substring("datetime'".length(), source.length() - 1) : source);
+
+        final Pattern pattern;
+        final Class javaType;
+        final Converter<String, String> converter;
+
+        Primitive(String pattern, Class javaType, Converter<String, String> converter) {
+            this.pattern = Pattern.compile("(?i)^" + pattern + "$");
+            this.javaType = javaType;
+            this.converter = converter;
+        }
+
+        public static Primitive parse(String input) {
+            for (Primitive type : Primitive.values()) {
+                if (type.pattern.matcher(input).matches()) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        public Class getJavaType() {
+            return javaType;
+        }
+
+        public Object convert(ConversionService conversionService, String input) {
+            String preparedInput = converter == null ? input : converter.convert(input);
+            if (preparedInput == null) {
+                return null;
+            }
+            return conversionService == null ? preparedInput : conversionService.convert(preparedInput, javaType);
+        }
     }
 
+    private ConversionService conversionService;
     private final Dialect dialect;
-    private final ConversionService conversionService;
     private final Tokenizer<Token> tokenizer;
     private final Lexer<Token> lexer;
 
@@ -51,27 +85,49 @@ public class OperationParser {
         Lexer.State<Token> expectOperator = lexer.addState("operator");
 
         expectOperand.addNextState(expectOperand, BRACKET_OPEN, UNARY_OPERATOR, METHOD_PARAMETER_SEPARATOR, METHOD);
-        expectOperand.addNextState(expectOperator, OPERAND);
+        expectOperand.addNextState(expectOperator, OPERAND, NULL);
         expectOperator.addNextState(expectOperator, BRACKET_CLOSE);
         expectOperator.addNextState(expectOperand, OPERATOR, METHOD_PARAMETER_SEPARATOR);
 
         return lexer;
     }
 
-    public OperationParser(Dialect dialect, ConversionService conversionService) {
+    public Parser(Dialect dialect, ConversionService conversionService) {
         this.dialect = dialect;
-        this.conversionService = conversionService;
+        this.setConversionService(conversionService);
         this.tokenizer = createTokenizer(dialect);
         this.lexer = createLexer(this.tokenizer);
     }
 
-    public OperationParser(Dialect dialect) {
+    public Parser(Dialect dialect) {
         this(dialect, DefaultConversionService.getSharedInstance());
     }
 
-    public Operation parse(String oDataExpression) throws ParseException {
-        List<Tokenizer.TokenInfo<Token>> rpn = toRPN(tokenize(oDataExpression));
+    public Operation parseExpression(String expression) throws ParseException {
+        List<Tokenizer.TokenInfo<Token>> rpn = toRPN(tokenize(expression));
         return evaluateRPN(rpn);
+    }
+
+    public Operand parseValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        Primitive type = Primitive.parse(value);
+        if (type == null) {
+            return new Operands.FieldReference(value);
+        }
+        if (type == Primitive.NULL) {
+            return null;
+        }
+        return new Operands.Wrapper(type.convert(getConversionService(), value));
+    }
+
+    public ConversionService getConversionService() {
+        return this.conversionService;
+    }
+
+    public void setConversionService(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     protected List<Tokenizer.TokenInfo<Token>> tokenize(String input) throws ParseException {
@@ -81,7 +137,9 @@ public class OperationParser {
     private Operand getOperand(Tokenizer.TokenInfo<Token> tokenInfo) {
         switch (tokenInfo.token) {
             case OPERAND:
-                return dialect.parseOperand(tokenInfo.sequence, conversionService);
+                return parseValue(tokenInfo.sequence);
+            case NULL:
+                return null;
             default:
                 throw new UnhandledSwitchCaseException(tokenInfo.token);
         }
@@ -141,8 +199,11 @@ public class OperationParser {
                     // ignore
                     break;
                 case OPERAND:
+                case NULL:
                     out.add(tokenInfo);
                     break;
+                default:
+                    throw new UnhandledSwitchCaseException(tokenInfo.token);
             }
         }
         while (!stack.isEmpty()) {
@@ -162,21 +223,20 @@ public class OperationParser {
                 Operand right = operands.pop();
                 if (operator.getNAry() == Operator.NAry.BINARY) {
                     Operand left = operands.pop();
-                    operation = new BinaryOperation(left, operator, right);
+                    operation = new Operations.Binary(operator, left, right);
                 } else if (operator.getNAry() == Operator.NAry.UNARY) {
-                    operation = new UnaryOperation(operator, right);
+                    operation = new Operations.Unary(operator, right);
                 }
-                operands.push(new Operand(operation));
+                operands.push(operation);
             } else {
                 operands.push(getOperand(tokenInfo));
             }
         }
 
         Operand result = operands.pop();
-        if (result.getType() != Operand.Type.OPERATION) {
+        if (!(result instanceof Operation)) {
             throw new RuntimeException("operation expected!");
         }
-
-        return result.getValue();
+        return (Operation)result;
     }
 }

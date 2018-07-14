@@ -25,10 +25,12 @@ public interface Operator {
 
     NAry getNAry();
 
-    Expression getExpression(Root root,
-                             CriteriaQuery query,
-                             CriteriaBuilder builder,
-                             Operand... operands);
+    Object evaluate(Object... operands);
+
+    Expression createExpression(Root root,
+                                CriteriaQuery query,
+                                CriteriaBuilder builder,
+                                Object... operands);
 
     default boolean hasHigherPrecedenceThan(Object other) {
         Assert.notNull(other, "otherOperator must not be null!");

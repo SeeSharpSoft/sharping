@@ -4,7 +4,7 @@
 
     <groupId>net.seesharpsoft.sharping</groupId>
     <artifactId>sharping-parent</artifactId>
-    <version>0.9.1</version>
+    <version>0.9.2-SNAPSHOT</version>
     <modules>
         <module>sharping-commons</module>
         <module>sharping-spring-data</module>
@@ -38,7 +38,6 @@
         <connection>scm:git:git://github.com/seesharpsoft/sharping.git</connection>
         <developerConnection>scm:git:ssh://github.com/seesharpsoft/sharping.git</developerConnection>
         <url>http://github.com/seesharpsoft/sharping/tree/master</url>
-        <tag>sharping-parent-0.6.0</tag>
     </scm>
 
     <properties>

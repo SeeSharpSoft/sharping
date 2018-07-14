@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.data.jpa;
 
 import net.seesharpsoft.spring.data.jpa.expression.Dialects;
-import net.seesharpsoft.spring.data.jpa.expression.OperationParser;
+import net.seesharpsoft.spring.data.jpa.expression.Parser;
 import net.seesharpsoft.spring.test.mock.CriteriaBuilderMockBuilder;
 import net.seesharpsoft.spring.test.mock.CriteriaQueryMockBuilder;
 import net.seesharpsoft.spring.test.mock.ExpressionMockBuilder;
@@ -35,9 +35,9 @@ public class OperationSpecificationUT {
 
     @Test
     public void toPredicate_should_return_proper_predicate() throws ParseException, IllegalAccessException {
-        OperationParser operationParser = new OperationParser(Dialects.JAVA);
+        Parser parser = new Parser(Dialects.JAVA);
         Specification specification = new OperationSpecification(
-                operationParser.parse("fString == 'eq < ne' && (fInteger < 3 || fDouble >= 123 || !(fInteger != fDouble / 4))")
+                parser.parseExpression("fString == 'eq < ne' && (fInteger < 3 || fDouble >= 123 || !(fInteger != fDouble / 4))")
         );
 
         Predicate predicate = specification.toPredicate(root, query, builder);
@@ -46,9 +46,9 @@ public class OperationSpecificationUT {
 
     @Test
     public void toPredicate_should_return_proper_predicate_including_null_values() throws ParseException, IllegalAccessException {
-        OperationParser operationParser = new OperationParser(Dialects.JAVA);
+        Parser parser = new Parser(Dialects.JAVA);
         Specification specification = new OperationSpecification(
-                operationParser.parse("(fString != null && fString == 'eq < ne') && (fInteger < 3 || fDouble >= 123 || !(fInteger != fDouble / 4))")
+                parser.parseExpression("(fString != null && fString == 'eq < ne') && (fInteger < 3 || fDouble >= 123 || !(fInteger != fDouble / 4))")
         );
 
         Predicate predicate = specification.toPredicate(root, query, builder);
