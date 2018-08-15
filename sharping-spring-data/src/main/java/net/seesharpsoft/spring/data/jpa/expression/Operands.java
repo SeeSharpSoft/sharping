@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import net.seesharpsoft.UnhandledSwitchCaseException;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -103,25 +104,37 @@ public class Operands {
         }
 
         @Override
-        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder) {
+        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder, Class targetType) {
             return getPath(root, getValue());
+        }
+
+        @Override
+        public Class getJavaType(Root root) {
+            return getPath(root, getValue()).getJavaType();
         }
     }
 
     public static class Wrapper implements Operand {
         private final Object value;
+        private final ConversionService conversionService;
 
-        public Wrapper(Object value) {
+        public Wrapper(Object value, ConversionService conversionService) {
             if (value instanceof Wrapper) {
                 Wrapper wrapper = (Wrapper) value;
                 this.value = wrapper.getValue();
+                this.conversionService = wrapper.conversionService;
             } else {
                 this.value = value;
+                this.conversionService = conversionService;
             }
         }
 
+        public Wrapper(Object value) {
+            this(value, DefaultConversionService.getSharedInstance());
+        }
+
         @Override
-        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder) {
+        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder, Class targetType) {
             if (this.getValue() == null) {
                 return criteriaBuilder.nullLiteral(void.class);
             }
@@ -129,12 +142,23 @@ public class Operands {
                 return this.getValue();
             }
             if (this.getValue() instanceof Operand) {
-                return this.<Operand>getValue().asExpression(root, criteriaQuery, criteriaBuilder);
+                return this.<Operand>getValue().asExpression(root, criteriaQuery, criteriaBuilder, targetType);
             }
             if (this.getValue() instanceof Specification) {
                 return this.<Specification>getValue().toPredicate(root, criteriaQuery, criteriaBuilder);
             }
-            return criteriaBuilder.literal(getValue());
+            return criteriaBuilder.literal(targetType == null || targetType.equals(Void.TYPE) ? getValue() : conversionService.convert(getValue(), targetType));
+        }
+
+        @Override
+        public Class getJavaType(Root root) {
+            if (this.getValue() instanceof Expression) {
+                return this.<Expression>getValue().getJavaType();
+            }
+            if (this.getValue() instanceof Operand) {
+                return this.<Operand>getValue().getJavaType(root);
+            }
+            return null;
         }
 
         protected <T> T getValue() {

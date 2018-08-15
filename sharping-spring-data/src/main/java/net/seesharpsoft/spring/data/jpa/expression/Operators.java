@@ -138,8 +138,9 @@ public class Operators {
             Assert.isTrue(operands == null || operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
-            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder);
-            Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder);
+            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
+            Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder, targetType);
 
             if (left instanceof Join || right instanceof Join) {
                 query.distinct(true);
@@ -228,8 +229,9 @@ public class Operators {
         public Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
-            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
+            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
             Object rightValue = rightOperand == null ? null : rightOperand.evaluate();
 
             return createExpression(root, query, builder, left, rightValue == null ? "" : rightValue.toString());
@@ -269,7 +271,7 @@ public class Operators {
         @Override
         public final Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands == null || operands.length == 1, "exactly one operand expected for unary operator!");
-            Expression expression = operands == null || operands[0] == null ? null : Operands.from(operands[0]).asExpression(root, query, builder);
+            Expression expression = operands == null || operands[0] == null ? null : Operands.from(operands[0]).asExpression(root, query, builder, null);
             return createExpression(root, query, builder, expression);
         }
     }
@@ -331,8 +333,9 @@ public class Operators {
             Assert.isTrue(operands == null || operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
-            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder);
-            Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder);
+            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
+            Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder, targetType);
 
             if (left instanceof Join || right instanceof Join) {
                 query.distinct(true);
@@ -345,6 +348,16 @@ public class Operators {
      * Base class for operator implementations.
      */
     public static abstract class Base implements Operator {
+
+        public static final Class decideTargetJavaClass(Root root, Operand left, Operand right) {
+            Class leftType = left == null ? null : left.getJavaType(root);
+            Class rightType = right == null ? null : right.getJavaType(root);
+            if (leftType == null && rightType == null) {
+                return null;
+            }
+            return leftType == null ? rightType : leftType;
+        }
+
         private final String name;
         private final NAry nary;
         private final int precedence;

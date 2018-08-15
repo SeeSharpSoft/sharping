@@ -119,7 +119,7 @@ public class Parser {
         if (type == Primitive.NULL) {
             return null;
         }
-        return new Operands.Wrapper(type.convert(getConversionService(), value));
+        return new Operands.Wrapper(type.convert(getConversionService(), value), conversionService);
     }
 
     public ConversionService getConversionService() {

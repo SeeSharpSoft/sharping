@@ -19,4 +19,5 @@ public class SimpleControllerDummy {
     public String specificationWithRequestParam(@Qualifier(value = "q") Specification specification) {
         return specification.toString();
     }
+
 }

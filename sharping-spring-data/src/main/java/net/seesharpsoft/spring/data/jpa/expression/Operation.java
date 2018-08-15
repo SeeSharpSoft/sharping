@@ -13,7 +13,8 @@ public interface Operation extends Operand {
 
     default Expression asExpression(Root root,
                              CriteriaQuery query,
-                             CriteriaBuilder builder) {
+                             CriteriaBuilder builder,
+                             Class targetType) {
         return getOperator().createExpression(root, query, builder, getOperands().toArray());
     }
 

@@ -90,6 +90,15 @@ public class Operations {
         public int hashCode() {
             return Objects.hash(getOperator(), Arrays.hashCode(getOperands().toArray()));
         }
+
+        @Override
+        public Class getJavaType(Root root) {
+            return (Class)getOperands().stream()
+                    .filter(operand -> operand instanceof Operand)
+                    .map(operand -> ((Operand) operand).getJavaType(root))
+                    .filter(type -> type != null)
+                    .findFirst().orElse(null);
+        }
     }
 
 }

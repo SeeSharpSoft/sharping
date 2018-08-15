@@ -22,7 +22,7 @@ public class OperationSpecification implements Specification {
 
     @Override
     public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder cb) {
-        Expression expression = getOperation().asExpression(root, query, cb);
+        Expression expression = getOperation().asExpression(root, query, cb, null);
         Assert.isInstanceOf(Predicate.class, expression);
         return (Predicate)expression;
     }
