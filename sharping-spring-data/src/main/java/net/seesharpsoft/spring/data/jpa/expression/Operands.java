@@ -16,24 +16,20 @@ public class Operands {
         // static
     }
 
-    public static final int TYPE_FIELD_NAME = 1;
-    public static final int TYPE_PRIMITIVE = 2;
-    public static final int TYPE_EXPRESSION = 3;
-
     /**
      * Creates an operand from given value. Returns null if value is null.
      *
      * @param value the value to get an operand for
      * @return an Operand implementation or null if value is null
      */
-    public static Operand from(Object value) {
+    public static final Operand from(Object value) {
         if (value == null || value instanceof Operand) {
             return (Operand) value;
         }
         return new Wrapper(value);
     }
 
-    public static Operand asReference(String path) {
+    public static final Operand asReference(String path) {
         return new FieldReference(path);
     }
 
@@ -44,7 +40,7 @@ public class Operands {
      * @param field target field
      * @return a join to given field
      */
-    protected static Join getJoin(From<?, ?> from, String field) {
+    protected static final Join getJoin(From<?, ?> from, String field) {
         for (Join join : from.getJoins()) {
             if (join.getAttribute().getName().equals(field) && join.getJoinType().equals(JoinType.LEFT)) {
                 return join;
@@ -60,7 +56,7 @@ public class Operands {
      * @param stringPath the string representation of the path
      * @return a path
      */
-    protected static Path getPath(From from, String stringPath) {
+    protected static final Path getPath(From from, String stringPath) {
         if (stringPath == null || stringPath.isEmpty()) {
             return from;
         }
@@ -114,7 +110,7 @@ public class Operands {
         }
     }
 
-    public static class Wrapper implements Operand {
+    protected static class Wrapper implements Operand {
         private final Object value;
         private final ConversionService conversionService;
 

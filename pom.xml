@@ -4,7 +4,7 @@
 
     <groupId>net.seesharpsoft.sharping</groupId>
     <artifactId>sharping-parent</artifactId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0</version>
     <modules>
         <module>sharping-commons</module>
         <module>sharping-spring-data</module>

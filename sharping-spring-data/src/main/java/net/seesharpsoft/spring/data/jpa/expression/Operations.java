@@ -1,14 +1,12 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import net.seesharpsoft.commons.util.SharpIO;
 import org.springframework.util.Assert;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class Operations {
 
@@ -93,7 +91,7 @@ public class Operations {
 
         @Override
         public Class getJavaType(Root root) {
-            return (Class)getOperands().stream()
+            return (Class) getOperands().stream()
                     .filter(operand -> operand instanceof Operand)
                     .map(operand -> ((Operand) operand).getJavaType(root))
                     .filter(type -> type != null)
