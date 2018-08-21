@@ -1,19 +1,16 @@
 package net.seesharpsoft.spring.data.web;
 
 import net.seesharpsoft.spring.data.jpa.MultiInput2SpecificationConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-@Component
 public class SpecificationHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     private static final String DEFAULT_FILTER_PARAMETER = "filter";
@@ -26,7 +23,6 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
     private Converter<String, Specification> stringToSpecificationConverter;
     private Converter<String[], Specification> stringsToSpecificationConverter;
 
-    @Autowired
     public SpecificationHandlerMethodArgumentResolver(Converter<String, Specification> stringToSpecificationConverter) {
         Assert.notNull(stringToSpecificationConverter, "String to Specification converter must be provided!");
         this.stringToSpecificationConverter = stringToSpecificationConverter;

@@ -1,24 +1,24 @@
 package net.seesharpsoft.spring.data.jpa;
 
+import net.seesharpsoft.spring.data.jpa.expression.Dialects;
 import net.seesharpsoft.spring.data.jpa.expression.Operands;
 import net.seesharpsoft.spring.data.jpa.expression.Operations;
-import net.seesharpsoft.spring.data.jpa.expression.Operators;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-
 public class ODataOperationSpecificationConverterUT {
 
-    private ODataExpression2SpecificationConverter converter;
+    private SpecificationConverter converter;
 
     @Before
     public void beforeEach() {
-        converter = new ODataExpression2SpecificationConverter();
+        converter = new SpecificationConverter(Dialects.ODATA, DefaultConversionService.getSharedInstance());
     }
 
     @Test
