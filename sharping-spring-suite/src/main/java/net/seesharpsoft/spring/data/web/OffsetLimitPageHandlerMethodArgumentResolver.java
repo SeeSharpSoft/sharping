@@ -11,7 +11,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-public class PageableHandlerMethodArgumentResolver extends org.springframework.data.web.PageableHandlerMethodArgumentResolver {
+public class OffsetLimitPageHandlerMethodArgumentResolver extends org.springframework.data.web.PageableHandlerMethodArgumentResolver {
 
     private static final SortHandlerMethodArgumentResolver DEFAULT_SORT_RESOLVER = new SortHandlerMethodArgumentResolver();
     
@@ -26,7 +26,7 @@ public class PageableHandlerMethodArgumentResolver extends org.springframework.d
     /**
      * Constructs an instance of this resolved with a default {@link SortHandlerMethodArgumentResolver}.
      */
-    public PageableHandlerMethodArgumentResolver() {
+    public OffsetLimitPageHandlerMethodArgumentResolver() {
         this((SortArgumentResolver) null);
     }
 
@@ -35,7 +35,7 @@ public class PageableHandlerMethodArgumentResolver extends org.springframework.d
      *
      * @param sortArgumentResolver the sort resolver to use
      */
-    public PageableHandlerMethodArgumentResolver(SortHandlerMethodArgumentResolver sortArgumentResolver) {
+    public OffsetLimitPageHandlerMethodArgumentResolver(SortHandlerMethodArgumentResolver sortArgumentResolver) {
         this((SortArgumentResolver) sortArgumentResolver);
     }
 
@@ -44,7 +44,7 @@ public class PageableHandlerMethodArgumentResolver extends org.springframework.d
      *
      * @param sortArgumentResolver the sort resolver to use
      */
-    public PageableHandlerMethodArgumentResolver(SortArgumentResolver sortArgumentResolver) {
+    public OffsetLimitPageHandlerMethodArgumentResolver(SortArgumentResolver sortArgumentResolver) {
         this.sortArgumentResolver = sortArgumentResolver == null ? DEFAULT_SORT_RESOLVER : sortArgumentResolver;
     }
     

@@ -15,27 +15,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class PageableHandlerMethodArgumentResolverUT {
+public class OffsetLimitPageHandlerMethodArgumentResolverUT {
 
     private MockMvc mockMvc;
 
-    private PageableHandlerMethodArgumentResolver argumentResolverMock;
+    private OffsetLimitPageHandlerMethodArgumentResolver argumentResolverMock;
     
     private static final Pageable FALLBACK_PAGEABLE = new PageRequest(0, 1);
     private static final int MAX_PAGE_SIZE = 14;
 
-    public PageableHandlerMethodArgumentResolver getDefaultArgumentResolver() {
-        PageableHandlerMethodArgumentResolver pageableHandlerMethodArgumentResolver = new PageableHandlerMethodArgumentResolver();
-        pageableHandlerMethodArgumentResolver.setFallbackPageable(FALLBACK_PAGEABLE);
-        pageableHandlerMethodArgumentResolver.setMaxPageSize(MAX_PAGE_SIZE);
-        return pageableHandlerMethodArgumentResolver;
+    public OffsetLimitPageHandlerMethodArgumentResolver getDefaultArgumentResolver() {
+        OffsetLimitPageHandlerMethodArgumentResolver offsetLimitPageHandlerMethodArgumentResolver = new OffsetLimitPageHandlerMethodArgumentResolver();
+        offsetLimitPageHandlerMethodArgumentResolver.setFallbackPageable(FALLBACK_PAGEABLE);
+        offsetLimitPageHandlerMethodArgumentResolver.setMaxPageSize(MAX_PAGE_SIZE);
+        return offsetLimitPageHandlerMethodArgumentResolver;
     }
 
     public void setup() {
         setup(getDefaultArgumentResolver());
     }
 
-    public void setup(PageableHandlerMethodArgumentResolver argumentResolver) {
+    public void setup(OffsetLimitPageHandlerMethodArgumentResolver argumentResolver) {
         argumentResolverMock = spy(
                 argumentResolver
         );
