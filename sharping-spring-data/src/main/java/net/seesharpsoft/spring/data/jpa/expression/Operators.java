@@ -4,11 +4,13 @@ import net.seesharpsoft.spring.data.jpa.expression.Operator.NAry;
 import net.seesharpsoft.commons.TriFunction;
 import org.springframework.util.Assert;
 
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -134,11 +136,11 @@ public class Operators {
         }
 
         @Override
-        public Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
+        public Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands == null || operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
-            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Class targetType = decideTargetJavaClass(root, Operands.getContexts(query), leftOperand, rightOperand);
             Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
             Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder, targetType);
 
@@ -164,7 +166,7 @@ public class Operators {
         }
 
         @Override
-        public Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
+        public Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands.length == 2, "exactly two operands expected for binary operator!");
             return builder.not(EQUALS.createExpression(root, query, builder, operands));
         }
@@ -177,7 +179,7 @@ public class Operators {
         }
 
         @Override
-        protected Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression left, String right) {
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
             return builder.like(left, String.format("\\%%s\\%", right));
         }
     };
@@ -188,7 +190,7 @@ public class Operators {
         }
 
         @Override
-        protected Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression left, String right) {
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
             return builder.like(left, String.format("%s\\%", right));
         }
     };
@@ -199,7 +201,7 @@ public class Operators {
         }
 
         @Override
-        protected Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression left, String right) {
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
             return builder.like(left, String.format("\\%%s", right));
         }
     };
@@ -223,14 +225,14 @@ public class Operators {
             return evaluate(leftValue == null ? "" : leftValue.toString(), rightValue == null ? "" : rightValue.toString());
         }
 
-        protected abstract Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression left, String right);
+        protected abstract Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right);
 
         @Override
-        public Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
+        public Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
-            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Class targetType = decideTargetJavaClass(root, Operands.getContexts(query), leftOperand, rightOperand);
             Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
             Object rightValue = rightOperand == null ? null : rightOperand.evaluate();
 
@@ -263,13 +265,13 @@ public class Operators {
             return this.evaluate(operand == null ? null : (T)operand.evaluate());
         }
 
-        protected Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression expression) {
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression expression) {
             Assert.notNull(this.expressionFunction, "expressionFunction must be defined!");
             return expressionFunction.apply(builder, expression);
         }
 
         @Override
-        public final Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
+        public final Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands == null || operands.length == 1, "exactly one operand expected for unary operator!");
             Expression expression = operands == null || operands[0] == null ? null : Operands.from(operands[0]).asExpression(root, query, builder, null);
             return createExpression(root, query, builder, expression);
@@ -323,17 +325,17 @@ public class Operators {
             return this.evaluate((T)left, (U)right);
         }
 
-        protected Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Expression left, Expression right) {
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression left, Expression right) {
             Assert.notNull(this.expressionFunction, "expressionFunction must be defined!");
             return expressionFunction.apply(builder, left, right);
         }
 
         @Override
-        public final Expression createExpression(Root root, CriteriaQuery query, CriteriaBuilder builder, Object... operands) {
+        public final Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands == null || operands.length == 2, "exactly two operands expected for binary operator!");
             Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
             Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
-            Class targetType = decideTargetJavaClass(root, leftOperand, rightOperand);
+            Class targetType = decideTargetJavaClass(root, Operands.getContexts(query), leftOperand, rightOperand);
             Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
             Expression right = rightOperand == null ? null : rightOperand.asExpression(root, query, builder, targetType);
 
@@ -349,9 +351,9 @@ public class Operators {
      */
     public static abstract class Base implements Operator {
 
-        public static final Class decideTargetJavaClass(Root root, Operand left, Operand right) {
-            Class leftType = left == null ? null : left.getJavaType(root);
-            Class rightType = right == null ? null : right.getJavaType(root);
+        public static final Class decideTargetJavaClass(Root root, List<TupleElement> tupleElements, Operand left, Operand right) {
+            Class leftType = left == null ? null : left.getJavaType(root, tupleElements);
+            Class rightType = right == null ? null : right.getJavaType(root, tupleElements);
             if (leftType == null && rightType == null) {
                 return null;
             }

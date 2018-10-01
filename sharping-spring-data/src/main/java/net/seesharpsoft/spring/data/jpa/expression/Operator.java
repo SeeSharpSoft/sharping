@@ -2,10 +2,7 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 
 public interface Operator {
 
@@ -28,7 +25,7 @@ public interface Operator {
     Object evaluate(Object... operands);
 
     Expression createExpression(Root root,
-                                CriteriaQuery query,
+                                AbstractQuery query,
                                 CriteriaBuilder builder,
                                 Object... operands);
 

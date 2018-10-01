@@ -2,6 +2,7 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import org.springframework.util.Assert;
 
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,10 +91,10 @@ public class Operations {
         }
 
         @Override
-        public Class getJavaType(Root root) {
+        public Class getJavaType(Root root, List<TupleElement> contexts) {
             return (Class) getOperands().stream()
                     .filter(operand -> operand instanceof Operand)
-                    .map(operand -> ((Operand) operand).getJavaType(root))
+                    .map(operand -> ((Operand) operand).getJavaType(root, contexts))
                     .filter(type -> type != null)
                     .findFirst().orElse(null);
         }

@@ -1,14 +1,16 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
+import net.seesharpsoft.spring.data.jpa.CriteriaQueryWrapper;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.*;
 import java.lang.reflect.Field;
-import java.util.Objects;
+import java.util.*;
 
 public class Operands {
 
@@ -69,6 +71,34 @@ public class Operands {
         return current.get(paths[lastIndex]);
     }
 
+    public static Set<Root<?>> getAllRoots(AbstractQuery query) {
+        Set<Root<?>> roots = new HashSet<>();
+        roots.addAll(query.getRoots());
+        if (query instanceof Subquery) {
+            roots.addAll(getAllRoots(((Subquery)query).getParent()));
+        }
+        return roots;
+    }
+
+    public static final List<Selection> getAllSelections(Selection<?> selection) {
+        if (selection == null) {
+            return Collections.emptyList();
+        }
+        if (selection.isCompoundSelection()) {
+            List<Selection> result = new ArrayList<>();
+            selection.getCompoundSelectionItems().forEach(compoundSelection -> result.addAll(getAllSelections(compoundSelection)));
+            return result;
+        }
+        return Collections.singletonList(selection);
+    }
+
+    public static List<TupleElement> getContexts(AbstractQuery query) {
+        List<TupleElement> elements = new ArrayList<>();
+        elements.addAll(getAllRoots(query));
+        elements.addAll(getAllSelections(query.getSelection()));
+        return elements;
+    }
+
     public static class FieldReference extends Wrapper {
 
         public FieldReference(String fieldReference) {
@@ -99,14 +129,31 @@ public class Operands {
             return String.format("{%s}", this.<String>getValue());
         }
 
-        @Override
-        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder, Class targetType) {
-            return getPath(root, getValue());
+        protected Expression findExpression(Root root, List<TupleElement> tupleElements, String name) {
+            Assert.notNull(name, "name must not be null");
+            if (root != null) {
+                try {
+                    return getPath(root, name);
+                } catch (IllegalArgumentException exc) {
+                    // TODO do not rely on an exception
+                }
+            }
+
+            return tupleElements.stream()
+                    .filter(element -> element instanceof Expression && name.equalsIgnoreCase(element.getAlias()))
+                    .map(element -> (Expression) element)
+                    .findFirst().orElse(null);
+
         }
 
         @Override
-        public Class getJavaType(Root root) {
-            return getPath(root, getValue()).getJavaType();
+        public Expression asExpression(Root root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
+            return findExpression(root, getContexts(query), getValue());
+        }
+
+        @Override
+        public Class getJavaType(Root root, List<TupleElement> contexts) {
+            return findExpression(root, contexts, getValue()).getJavaType();
         }
     }
 
@@ -130,7 +177,7 @@ public class Operands {
         }
 
         @Override
-        public Expression asExpression(Root root, CriteriaQuery criteriaQuery, CriteriaBuilder criteriaBuilder, Class targetType) {
+        public Expression asExpression(Root root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
             if (this.getValue() == null) {
                 return criteriaBuilder.nullLiteral(void.class);
             }
@@ -138,21 +185,21 @@ public class Operands {
                 return this.getValue();
             }
             if (this.getValue() instanceof Operand) {
-                return this.<Operand>getValue().asExpression(root, criteriaQuery, criteriaBuilder, targetType);
+                return this.<Operand>getValue().asExpression(root, query, criteriaBuilder, targetType);
             }
             if (this.getValue() instanceof Specification) {
-                return this.<Specification>getValue().toPredicate(root, criteriaQuery, criteriaBuilder);
+                return this.<Specification>getValue().toPredicate(root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
             }
             return criteriaBuilder.literal(targetType == null || targetType.equals(Void.TYPE) ? getValue() : conversionService.convert(getValue(), targetType));
         }
 
         @Override
-        public Class getJavaType(Root root) {
+        public Class getJavaType(Root root, List<TupleElement> contexts) {
             if (this.getValue() instanceof Expression) {
                 return this.<Expression>getValue().getJavaType();
             }
             if (this.getValue() instanceof Operand) {
-                return this.<Operand>getValue().getJavaType(root);
+                return this.<Operand>getValue().getJavaType(root, contexts);
             }
             return null;
         }

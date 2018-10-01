@@ -1,9 +1,8 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Root;
+import javax.persistence.TupleElement;
+import javax.persistence.criteria.*;
+import java.util.List;
 
 public interface Operand {
 
@@ -18,9 +17,9 @@ public interface Operand {
     Object evaluate();
 
     Expression asExpression(Root root,
-                            CriteriaQuery criteriaQuery,
+                            AbstractQuery query,
                             CriteriaBuilder criteriaBuilder,
                             Class targetType);
 
-    Class getJavaType(Root root);
+    Class getJavaType(Root root, List<TupleElement> contexts);
 }
