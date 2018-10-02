@@ -5,19 +5,22 @@ import net.seesharpsoft.spring.multipart.batch.BatchMessageConverter;
 import net.seesharpsoft.spring.multipart.batch.BatchMultipartResolver;
 import net.seesharpsoft.spring.multipart.batch.services.BatchRequestProperties;
 import net.seesharpsoft.spring.multipart.batch.services.BatchRequestService;
-import net.seesharpsoft.spring.multipart.batch.services.DispatcherBatchRequestService;
 import net.seesharpsoft.spring.multipart.batch.services.RestBatchRequestService;
+import net.seesharpsoft.spring.multipart.boot.services.BootDispatcherBatchRequestService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.util.List;
@@ -51,12 +54,14 @@ public class MultipartConfiguration extends WebMvcConfigurationSupport implement
     @Bean
     @ConditionalOnMissingBean
     @Conditional(AutostartEnabledCondition.class)
-    BatchRequestService batchRequestService() {
+    BatchRequestService batchRequestService(
+            @Autowired(required = false) DispatcherServlet dispatcherServlet,
+            @Autowired(required = false) @Qualifier("securityFilterChainRegistration") DelegatingFilterProxyRegistrationBean filterProxyRegistrationBean) {
         switch (properties.getMode()) {
             case None:
                 return null;
             case LocalDispatch:
-                return new DispatcherBatchRequestService();
+                return new BootDispatcherBatchRequestService(dispatcherServlet, filterProxyRegistrationBean);
             case HttpRequest:
                 return new RestBatchRequestService();
             default:

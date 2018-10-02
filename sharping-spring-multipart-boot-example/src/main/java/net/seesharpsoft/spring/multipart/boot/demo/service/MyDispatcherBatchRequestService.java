@@ -6,6 +6,7 @@ import net.seesharpsoft.spring.multipart.batch.services.BatchRequestProperties;
 import net.seesharpsoft.spring.multipart.batch.services.DispatcherBatchRequestService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,10 @@ import java.io.IOException;
 
 @Service
 public class MyDispatcherBatchRequestService extends DispatcherBatchRequestService {
+
+    public MyDispatcherBatchRequestService(DispatcherServlet dispatcherServlet) {
+        super(dispatcherServlet);
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override

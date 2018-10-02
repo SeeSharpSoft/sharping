@@ -11,8 +11,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 
@@ -48,6 +52,10 @@ public abstract class BatchRequestServiceBase implements BatchRequestService {
         return batchResponse;
     }
 
+    protected Charset getUrlEncoding() {
+        return StandardCharsets.UTF_8;
+    }
+
     /**
      * Process a single request from a batch.
      *
@@ -67,7 +75,7 @@ public abstract class BatchRequestServiceBase implements BatchRequestService {
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) throws ServletException, IOException;
 
-    protected URI getSingleRequestUri(BatchRequest.Entity singleRequest, HttpServletRequest servletRequest) throws MalformedURLException {
+    protected URI getSingleRequestUri(BatchRequest.Entity singleRequest, HttpServletRequest servletRequest) throws MalformedURLException, UnsupportedEncodingException {
         String url = singleRequest.getUrl();
         String uriString = null;
         if (url.startsWith("/")) {
@@ -79,6 +87,6 @@ public abstract class BatchRequestServiceBase implements BatchRequestService {
         } else {
             uriString = UriComponentsBuilder.fromHttpUrl(url).toUriString();
         }
-        return URI.create(uriString);
+        return URI.create(URLDecoder.decode(uriString, getUrlEncoding().name()));
     }
 }
