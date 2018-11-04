@@ -59,7 +59,7 @@ public class LexerUT {
     public void init_should_read_lexer_states_from_file() throws IOException {
         Lexer<Integer> lexer = new Lexer<>(tokenizer);
 
-        lexer.init("/lexer/lexer_init_simple.lex", true);
+        lexer.init("/lexer/lexer_init_simple.lex");
 
         assertThat(lexer.getState("start"), notNullValue());
         assertThat(lexer.getState("end"), notNullValue());
@@ -75,7 +75,7 @@ public class LexerUT {
     public void init_should_read_lexer_states_from_file_with_custom_token_resolver() throws IOException {
         Lexer<Integer> lexer = new Lexer<>(tokenizer);
 
-        lexer.init("/lexer/lexer_init_simple.lex", true, token -> Integer.parseInt(token));
+        lexer.init("/lexer/lexer_init_simple.lex", token -> Integer.parseInt(token));
 
         assertThat(lexer.getState("start"), notNullValue());
         assertThat(lexer.getState("end"), notNullValue());
@@ -93,7 +93,7 @@ public class LexerUT {
 
         Tokenizer customTokenizer = lexer.getTokenizer();
 
-        lexer.init("/lexer/lexer_init_with_tokens.lex", true);
+        lexer.init("/lexer/lexer_init_with_tokens.lex");
 
         assertThat(lexer.getState("start"), notNullValue());
         assertThat(lexer.getState("end"), notNullValue());
@@ -114,7 +114,7 @@ public class LexerUT {
 
         Tokenizer<Integer> customTokenizer = lexer.getTokenizer();
 
-        lexer.init("/lexer/lexer_init_with_tokens.lex", true, token -> Integer.parseInt(token));
+        lexer.init("/lexer/lexer_init_with_tokens.lex", token -> Integer.parseInt(token));
 
         assertThat(lexer.getState("start"), notNullValue());
         assertThat(lexer.getState("end"), notNullValue());

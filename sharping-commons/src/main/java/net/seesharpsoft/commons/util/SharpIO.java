@@ -1,17 +1,12 @@
 package net.seesharpsoft.commons.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
+import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -48,15 +43,28 @@ public class SharpIO {
         }
     }
 
-    public static InputStream createInputStream(String fileName, boolean isResource) throws IOException {
-        if (isResource) {
-            return SharpIO.class.getResourceAsStream(fileName);
+    public static File getFile(String fileName, String reference) {
+        String path = fileName;
+        if (reference != null && !fileName.startsWith("/") && !fileName.startsWith("\\")) {
+            path = reference + File.pathSeparator + fileName;
         }
-        return Files.newInputStream(Paths.get(fileName));
+        URL url = SharpIO.class.getResource(path);
+        if (url == null) {
+            return new File(path);
+        }
+        return new File(url.getFile());
+    }
+
+    public static File getFile(String fileName) {
+        return getFile(fileName, null);
     }
 
     public static InputStream createInputStream(String fileName) throws IOException {
-        return createInputStream(fileName, false);
+        return createInputStream(getFile(fileName));
+    }
+
+    public static InputStream createInputStream(File file) throws IOException {
+        return new FileInputStream(file);
     }
 
     public static String readAsString(String fileName, Charset charset) throws IOException {

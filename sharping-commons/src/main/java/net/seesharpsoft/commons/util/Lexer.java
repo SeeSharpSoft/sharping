@@ -262,21 +262,13 @@ public class Lexer<T> {
         }
     }
 
-    public void init(String fileName, boolean isResource, Function<String, T> tokenResolver) throws IOException {
-        try (InputStream is = SharpIO.createInputStream(fileName, isResource)) {
+    public void init(String fileName, Function<String, T> tokenResolver) throws IOException {
+        try (InputStream is = SharpIO.createInputStream(fileName)) {
             this.init(is, tokenResolver);
         }
     }
 
-    public void init(String fileName, boolean isResource) throws IOException {
-        this.init(fileName, isResource, sequence -> (T)sequence);
-    }
-
-    public void init(String fileName, Function<String, T> tokenResolver) throws IOException {
-        this.init(fileName, false, tokenResolver);
-    }
-
     public void init(String fileName) throws IOException {
-        this.init(fileName, false);
+        this.init(fileName, sequence -> (T)sequence);
     }
 }
