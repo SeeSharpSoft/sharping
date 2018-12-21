@@ -42,7 +42,7 @@ public class Operands {
      * @param field target field
      * @return a join to given field
      */
-    protected static final Join getJoin(From<?, ?> from, String field) {
+    public static final Join getJoin(From<?, ?> from, String field) {
         for (Join join : from.getJoins()) {
             if (join.getAttribute().getName().equals(field) && join.getJoinType().equals(JoinType.LEFT)) {
                 return join;
@@ -58,7 +58,7 @@ public class Operands {
      * @param stringPath the string representation of the path
      * @return a path
      */
-    protected static final Path getPath(From from, String stringPath) {
+    public static final Path getPath(From from, String stringPath) {
         if (stringPath == null || stringPath.isEmpty()) {
             return from;
         }
@@ -120,6 +120,7 @@ public class Operands {
                 if (current == null) {
                     break;
                 }
+                clazz = current.getClass();
             }
             return current;
         }
@@ -153,7 +154,8 @@ public class Operands {
 
         @Override
         public Class getJavaType(Root root, List<TupleElement> contexts) {
-            return findExpression(root, contexts, getValue()).getJavaType();
+            Expression expression = findExpression(root, contexts, getValue());
+            return expression == null ? null : expression.getJavaType();
         }
     }
 
