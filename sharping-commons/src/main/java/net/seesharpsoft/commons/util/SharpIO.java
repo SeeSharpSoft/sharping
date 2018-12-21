@@ -2,6 +2,7 @@ package net.seesharpsoft.commons.util;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -52,7 +53,13 @@ public class SharpIO {
         if (url == null) {
             return new File(path);
         }
-        return new File(url.getFile());
+
+        try {
+            return new File(url.toURI().getPath());
+        } catch (URISyntaxException exc) {
+            exc.printStackTrace();
+            throw new RuntimeException(exc);
+        }
     }
 
     public static File getFile(String fileName) {
