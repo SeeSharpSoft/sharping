@@ -19,6 +19,38 @@ public class Operations {
         return new Binary(Operators.EQUALS, first, second);
     }
 
+    public static Operation lessThan(Object first, Object second) {
+        return new Binary(Operators.LESS_THAN, first, second);
+    }
+
+    public static Operation lessThanOrEquals(Object first, Object second) {
+        return new Binary(Operators.LESS_THAN_OR_EQUALS, first, second);
+    }
+
+    public static Operation greaterThan(Object first, Object second) {
+        return new Binary(Operators.GREATER_THAN, first, second);
+    }
+
+    public static Operation greaterThanOrEquals(Object first, Object second) {
+        return new Binary(Operators.GREATER_THAN_OR_EQUALS, first, second);
+    }
+
+    public static Operation not(Object first) {
+        return new Unary(Operators.NOT, first);
+    }
+
+    public static Operation in(Object first, Object second) {
+        return new Binary(Operators.IN, first, second);
+    }
+
+    public static Operation and(Object first, Object second) {
+        return new Binary(Operators.AND, first, second);
+    }
+
+    public static Operation or(Object first, Object second) {
+        return new Binary(Operators.OR, first, second);
+    }
+
     public static class Unary extends Base {
         public Unary(Operator operator, Object operand) {
             super(operator, operand);
