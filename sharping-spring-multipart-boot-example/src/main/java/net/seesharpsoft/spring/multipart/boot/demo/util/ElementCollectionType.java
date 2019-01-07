@@ -6,8 +6,6 @@ import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.type.descriptor.java.DataHelper;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 import org.hibernate.type.descriptor.sql.VarcharTypeDescriptor;
 import org.hibernate.usertype.ParameterizedType;
 
@@ -22,19 +20,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class ElementCollectionFun extends AbstractSingleColumnStandardBasicType<List> implements ParameterizedType {
+public class ElementCollectionType extends AbstractSingleColumnStandardBasicType<List> implements ParameterizedType {
 
-    private static class ElementCollection extends AbstractTypeDescriptor<List> {
+    public static class ElementCollectionDescriptor extends AbstractTypeDescriptor<List> {
 
-        public static final ElementCollection INSTANCE = new ElementCollection();
+        public static final ElementCollectionDescriptor INSTANCE = new ElementCollectionDescriptor();
 
         private Class elementType;
 
-        public ElementCollection() {
+        public ElementCollectionDescriptor() {
             super(List.class);
         }
 
-        public ElementCollection(Class elementType) {
+        public ElementCollectionDescriptor(Class elementType) {
             this();
             this.elementType = elementType;
         }
@@ -107,15 +105,15 @@ public class ElementCollectionFun extends AbstractSingleColumnStandardBasicType<
         }
     }
 
-    public ElementCollectionFun(SqlTypeDescriptor sqlTypeDescriptor, JavaTypeDescriptor javaTypeDescriptor) {
-        super(VarcharTypeDescriptor.INSTANCE, ElementCollection.INSTANCE);
+    public ElementCollectionType() {
+        super(VarcharTypeDescriptor.INSTANCE, ElementCollectionDescriptor.INSTANCE);
     }
 
     @Override
     public void setParameterValues(Properties properties) {
         if (properties.containsKey("type")) {
             try {
-                setJavaTypeDescriptor(new ElementCollection(Class.forName(properties.getProperty("type"))));
+                setJavaTypeDescriptor(new ElementCollectionDescriptor(Class.forName(properties.getProperty("type"))));
             } catch (ClassNotFoundException exc) {
                 exc.printStackTrace();
             }
@@ -124,6 +122,6 @@ public class ElementCollectionFun extends AbstractSingleColumnStandardBasicType<
 
     @Override
     public String getName() {
-        return "ElementCollectionFun";
+        return "ElementCollectionType";
     }
 }

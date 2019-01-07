@@ -21,6 +21,6 @@ public class Article {
     @ManyToOne
     private Person author;
 
-    @Type(type = "net.seesharpsoft.spring.multipart.boot.demo.util.ElementCollectionFun")
+    @Type(type = "net.seesharpsoft.spring.multipart.boot.demo.util.ElementCollectionType")
     private List<String> languages;
 }
