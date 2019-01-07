@@ -180,17 +180,26 @@ public class Operands {
 
         @Override
         public Expression asExpression(Root root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
-            if (this.getValue() == null) {
+            Object value = this.getValue();
+            if (value == null) {
                 return criteriaBuilder.nullLiteral(void.class);
             }
-            if (this.getValue() instanceof Expression) {
-                return this.getValue();
+            if (value instanceof Expression) {
+                return (Expression)value;
             }
-            if (this.getValue() instanceof Operand) {
-                return this.<Operand>getValue().asExpression(root, query, criteriaBuilder, targetType);
+            if (value instanceof Operand) {
+                return ((Operand)value).asExpression(root, query, criteriaBuilder, targetType);
             }
-            if (this.getValue() instanceof Specification) {
-                return this.<Specification>getValue().toPredicate(root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
+            if (value instanceof Specification) {
+                return ((Specification)value).toPredicate(root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
+            }
+            if (value instanceof Iterable) {
+                final Map mapped = new HashMap();
+                ((Iterable)value).forEach(item -> mapped.put(item, item));
+                value = mapped;
+            }
+            if (value instanceof Map) {
+                return criteriaBuilder.values((Map)value);
             }
             return criteriaBuilder.literal(targetType == null || targetType.equals(Void.TYPE) ? getValue() : conversionService.convert(getValue(), targetType));
         }
