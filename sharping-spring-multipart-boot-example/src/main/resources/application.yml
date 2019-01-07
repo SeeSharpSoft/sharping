@@ -1,3 +1,6 @@
 sharping.multipart:
   mode: LocalDispatch
   endpoint: /my/own/multipart/endpoint
+
+spring.jpa.properties:
+  hibernate.persister.resolver: net.seesharpsoft.spring.multipart.boot.demo.util.CustomPersisterClassResolver

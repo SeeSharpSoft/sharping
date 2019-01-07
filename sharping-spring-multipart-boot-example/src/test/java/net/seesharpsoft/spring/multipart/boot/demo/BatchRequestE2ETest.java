@@ -49,14 +49,14 @@ public class BatchRequestE2ETest {
                             "Content-Type: application/http\n" +
                             "Content-Transfer-Encoding: binary\n" +
                             "\n" +
-                            "GET /greeting?name=Trevor HTTP/1.1\n" +
+                            "GET /dummy?name=Trevor HTTP/1.1\n" +
                             "Host: host\n" +
                             "\n" +
                             "--batch\n" +
                             "Content-Type: application/http\n" +
                             "Content-Transfer-Encoding: binary\n" +
                             "\n" +
-                            "GET /greeting?name=Peter&name=Lustig HTTP/1.1\n" +
+                            "GET /dummy?name=Peter&name=Lustig HTTP/1.1\n" +
                             "--batch--"),
                     String.class);
         } catch(HttpClientErrorException exc) {
@@ -84,14 +84,14 @@ public class BatchRequestE2ETest {
                         "Content-Type: application/http\n" +
                         "Content-Transfer-Encoding: binary\n" +
                         "\n" +
-                        "GET /greeting?name=Trevor HTTP/1.1\n" +
+                        "GET /dummy?name=Trevor HTTP/1.1\n" +
                         "Host: host\n" +
                         "\n" +
                         "--batch\n" +
                         "Content-Type: application/http\n" +
                         "Content-Transfer-Encoding: binary\n" +
                         "\n" +
-                        "GET /greeting?name=Peter&name=Lustig HTTP/1.1\n" +
+                        "GET /dummy?name=Peter&name=Lustig HTTP/1.1\n" +
                         "--batch--",
                         createHeaders("John", "password")),
                 String.class);
