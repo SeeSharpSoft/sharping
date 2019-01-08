@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class SharpIO {
     public static File getFile(String fileName, String reference) {
         String path = fileName;
         if (reference != null && !fileName.startsWith("/") && !fileName.startsWith("\\")) {
-            path = reference + File.pathSeparator + fileName;
+            path = Paths.get(reference, fileName).toString();
         }
         URL url = SharpIO.class.getResource(path);
         if (url == null) {
