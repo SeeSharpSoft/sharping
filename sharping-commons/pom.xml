@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sharping-commons</artifactId>
+    <packaging>jar</packaging>
 
     <name>Dependency free Core Library</name>
     <description>Dependency free library for core functionality useful for most everything.</description>

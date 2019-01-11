@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sharping-spring-data</artifactId>
+    <packaging>jar</packaging>
 
     <name>Java Spring/JPA Data Handling support</name>
     <description>Java Spring/JPA 2.1 data related extensions.</description>

@@ -77,6 +77,8 @@ public class Operators {
         return result;
     }
 
+    public static final Operator IFE = new IfElseOperator();
+
     public static final Operator AND = new Operators.Binary<>("&&", 40, CriteriaBuilder::and, Boolean::logicalAnd);
     public static final Operator OR = new Operators.Binary<>("||", 30, CriteriaBuilder::or, Boolean::logicalOr);
     public static final Operator NOT = new Operators.Unary<Boolean, Boolean>("!", 140, CriteriaBuilder::not, x -> !x) {
@@ -205,6 +207,58 @@ public class Operators {
             return builder.like(left, String.format("\\%%s", right));
         }
     };
+
+    /**
+     * Provides an if-else (case-when) operator.
+     */
+    public static class IfElseOperator extends Operators.Base {
+
+        public IfElseOperator() {
+            super("ife", NAry.TERTIARY, 20);
+        }
+
+        @Override
+        public Object evaluate(Object... objects) {
+            Assert.isTrue(objects == null || objects.length == 3, "exactly three operands expected for tertiary operator!");
+            Object condition = objects[0];
+            Object conditionResult = condition;
+            Boolean ifConditionHit = false;
+            if (condition instanceof Operand) {
+                conditionResult = ((Operand)condition).evaluate();
+            }
+            if (conditionResult instanceof Boolean) {
+                ifConditionHit = (Boolean)conditionResult;
+            } else if (conditionResult instanceof String) {
+                ifConditionHit = Boolean.parseBoolean((String)conditionResult);
+            } else if (conditionResult instanceof Number) {
+                ifConditionHit = conditionResult.equals(0);
+            }
+            return ifConditionHit ? objects[1] : objects[2];
+        }
+
+        protected Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Expression ifCondition, Expression ifCase, Expression elseCase) {
+            return builder.selectCase().when(ifCondition, ifCase).otherwise(elseCase);
+        }
+
+        @Override
+        public final Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
+            Assert.isTrue(operands == null || operands.length == 3, "exactly three operands expected for tertiary operator!");
+            Operand ifConditionOperand = operands == null ? null : Operands.from(operands[0]);
+            Operand ifCaseOperand = operands == null ? null : Operands.from(operands[1]);
+            Operand elseCaseOperand = operands == null ? null : Operands.from(operands[2]);
+            Class targetType = decideTargetJavaClass(root, Operands.getContexts(query), ifCaseOperand, elseCaseOperand);
+            Expression ifCondition = ifConditionOperand == null ? null : ifConditionOperand.asExpression(root, query, builder, targetType);
+            Expression ifCase = ifCaseOperand == null ? null : ifCaseOperand.asExpression(root, query, builder, targetType);
+            Expression elseCase = elseCaseOperand == null ? null : elseCaseOperand.asExpression(root, query, builder, targetType);
+
+            return createExpression(root, query, builder, ifCondition, ifCase, elseCase);
+        }
+
+        @Override
+        public Class getJavaType(Root root, List<TupleElement> contexts, Object... operands) {
+            return super.getJavaType(root, contexts, Arrays.copyOfRange(operands, 1, operands.length));
+        }
+    }
 
     protected abstract static class LikeOperatorBase extends Operators.Base {
 

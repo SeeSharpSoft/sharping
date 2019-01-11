@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sharping-spring-suite-boot</artifactId>
+    <packaging>jar</packaging>
 
     <name>Bundled Java Spring extensions with Boot configuration</name>
     <description>Bundled Java Spring extensions like sharping-data, sharping-multipart, etc. with Boot configuration</description>

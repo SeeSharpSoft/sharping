@@ -42,16 +42,18 @@ public class Dialects {
         );
         dialect.generateOperatorTokenPattern();
         dialect.addTokenPatterns(
-                Pair.of(Token.METHOD, "startswith|endswith|substring"),
+                Pair.of(Token.BINARY_OPERATOR_METHOD, "startswith|endswith|substring"),
+                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "ife"),
                 Pair.of(Token.UNARY_OPERATOR, "not"),
                 Pair.of(Token.NULL, "null"),
-                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|null)[^ (),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|ife|null)[^ (),\\[\\]]+|\\[.+?\\]")
         );
         dialect.addOperators(
                 Pair.of("substring", Operators.IS_SUBSTRING),
                 Pair.of("startsWith", Operators.STARTS_WITH),
                 Pair.of("endsWith", Operators.ENDS_WITH),
-                Pair.of("not", Operators.NOT)
+                Pair.of("not", Operators.NOT),
+                Pair.of("ife", Operators.IFE)
         );
         ODATA = dialect;
 
@@ -76,8 +78,8 @@ public class Dialects {
                 Pair.of("!", Operators.NOT)
         );
         dialect.addTokenPatterns(
-                Pair.of(Token.OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
-                Pair.of(Token.METHOD, ""),
+                Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
+                Pair.of(Token.BINARY_OPERATOR_METHOD, ""),
                 Pair.of(Token.UNARY_OPERATOR, "[!]"),
                 Pair.of(Token.NULL, "null"),
                 Pair.of(Token.OPERAND, "'.+?'|(?!null)[^ !(),\\[\\]]+|\\[.+?\\]")
@@ -130,7 +132,7 @@ public class Dialects {
         }
 
         protected void generateOperatorTokenPattern() {
-            addTokenPattern(Token.OPERATOR, String.join("|",
+            addTokenPattern(Token.BINARY_OPERATOR, String.join("|",
                     this.operatorMap.keySet().stream().map(key -> Pattern.quote(key)).collect(Collectors.toList()))
             );
         }

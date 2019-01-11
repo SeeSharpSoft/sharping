@@ -9,6 +9,7 @@
     </parent>
 
     <artifactId>sharping-spring-multipart</artifactId>
+    <packaging>jar</packaging>
 
     <name>Java Spring Multipart Request</name>
     <description>Web batch/bulk/multipart requests for Java Spring framework.</description>

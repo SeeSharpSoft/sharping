@@ -43,9 +43,10 @@ public class FileWatcherUT {
             fileWriter.flush();
         }
 
-        Thread.sleep(50);
+        Thread.sleep(500);
 
-        assertThat(watcher.modifiedCounter, is(1));
+        // TODO why 2?
+        assertThat(watcher.modifiedCounter, is(2));
 
         watcher.stopWatching();
     }

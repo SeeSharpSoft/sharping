@@ -22,6 +22,7 @@ public class Parser {
     enum Primitive {
         NULL("null", void.class, source -> null),
         BOOLEAN("true|false", boolean.class, null),
+        LONG("[-+]?[0-9]+L", Long.class, source -> source.substring(0, source.length() - 1)),
         INTEGER("[-+]?[0-9]+", Integer.class, null),
         GUID("[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}", UUID.class, null),
         STRING("'.+?'", String.class, source -> source.substring(1, source.length() - 1)),
@@ -84,10 +85,10 @@ public class Parser {
         Lexer.State<Token> expectOperand = lexer.addState("operand");
         Lexer.State<Token> expectOperator = lexer.addState("operator");
 
-        expectOperand.addNextState(expectOperand, BRACKET_OPEN, UNARY_OPERATOR, METHOD_PARAMETER_SEPARATOR, METHOD);
+        expectOperand.addNextState(expectOperand, BRACKET_OPEN, UNARY_OPERATOR, UNARY_OPERATOR_METHOD, BINARY_OPERATOR_METHOD, TERTIARY_OPERATOR_METHOD, METHOD_PARAMETER_SEPARATOR);
         expectOperand.addNextState(expectOperator, OPERAND, NULL);
         expectOperator.addNextState(expectOperator, BRACKET_CLOSE);
-        expectOperator.addNextState(expectOperand, OPERATOR, METHOD_PARAMETER_SEPARATOR);
+        expectOperator.addNextState(expectOperand, BINARY_OPERATOR, METHOD_PARAMETER_SEPARATOR);
 
         return lexer;
     }
@@ -148,8 +149,21 @@ public class Parser {
     private static boolean isOperator(Tokenizer.TokenInfo<Token> tokenInfo) {
         switch (tokenInfo.token) {
             case UNARY_OPERATOR:
-            case OPERATOR:
-            case METHOD:
+            case BINARY_OPERATOR:
+            case UNARY_OPERATOR_METHOD:
+            case BINARY_OPERATOR_METHOD:
+            case TERTIARY_OPERATOR_METHOD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isMethod(Tokenizer.TokenInfo<Token> tokenInfo) {
+        switch (tokenInfo.token) {
+            case UNARY_OPERATOR_METHOD:
+            case BINARY_OPERATOR_METHOD:
+            case TERTIARY_OPERATOR_METHOD:
                 return true;
             default:
                 return false;
@@ -170,7 +184,7 @@ public class Parser {
             Tokenizer.TokenInfo<Token> tokenInfo = in.poll();
             switch (tokenInfo.token) {
                 case UNARY_OPERATOR:
-                case OPERATOR:
+                case BINARY_OPERATOR:
                     Operator operator = getOperator(tokenInfo);
                     while (!stack.isEmpty() && isOperator(stack.peek())) {
                         if (!operator.hasHigherPrecedenceThan(getOperator(stack.peek()))) {
@@ -190,13 +204,17 @@ public class Parser {
                     }
                     stack.pop();
                     break;
-                case METHOD:
+                case UNARY_OPERATOR_METHOD:
+                case BINARY_OPERATOR_METHOD:
+                case TERTIARY_OPERATOR_METHOD:
                     Assert.isTrue(in.peek().token == BRACKET_OPEN, "opening bracket after method name expected!");
                     stack.push(in.poll());
                     stack.push(tokenInfo);
                     break;
                 case METHOD_PARAMETER_SEPARATOR:
-                    // ignore
+                    while (!stack.isEmpty() && !isMethod(stack.peek())) {
+                        out.add(stack.pop());
+                    }
                     break;
                 case OPERAND:
                 case NULL:
@@ -221,11 +239,21 @@ public class Parser {
                 Operator operator = getOperator(tokenInfo);
                 Operation operation = null;
                 Operand right = operands.pop();
-                if (operator.getNAry() == Operator.NAry.BINARY) {
-                    Operand left = operands.pop();
-                    operation = new Operations.Binary(operator, left, right);
-                } else if (operator.getNAry() == Operator.NAry.UNARY) {
-                    operation = new Operations.Unary(operator, right);
+                switch(operator.getNAry()) {
+                    case UNARY:
+                        operation = new Operations.Unary(operator, right);
+                        break;
+                    case BINARY:
+                        Operand left = operands.pop();
+                        operation = new Operations.Binary(operator, left, right);
+                        break;
+                    case TERTIARY:
+                        Operand second = operands.pop();
+                        Operand first = operands.pop();
+                        operation = new Operations.Tertiary(operator, first, second, right);
+                        break;
+                    default:
+                        throw new UnhandledSwitchCaseException(operator.getNAry());
                 }
                 operands.push(operation);
             } else {

@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sharping-spring-multipart-boot</artifactId>
+    <packaging>jar</packaging>
 
     <name>Java Spring Boot Multipart Request</name>
     <description>Web batch/bulk/multipart requests with Java Spring Boot framework.</description>

@@ -87,6 +87,30 @@ public class Operations {
         }
     }
 
+    public static class Tertiary extends Base {
+        public Tertiary(Operator operator, Object firstOperand, Object secondOperand, Object thirdOperand) {
+            super(operator, firstOperand, secondOperand, thirdOperand);
+            Assert.isTrue(operator.getNAry() == Operator.NAry.TERTIARY, "tertiary operator expected!");
+        }
+
+        public Object getFirstOperand() {
+            return getOperands().get(0);
+        }
+
+        public Object getSecondOperand() {
+            return getOperands().get(1);
+        }
+
+        public Object getThirdOperand() {
+            return getOperands().get(2);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s(%s,%s,%s)", getOperator(), getFirstOperand(), getSecondOperand(), getThirdOperand());
+        }
+    }
+
     public static class Base implements Operation {
         private final Operator operator;
         private final List operands;
@@ -124,11 +148,7 @@ public class Operations {
 
         @Override
         public Class getJavaType(Root root, List<TupleElement> contexts) {
-            return (Class) getOperands().stream()
-                    .filter(operand -> operand instanceof Operand)
-                    .map(operand -> ((Operand) operand).getJavaType(root, contexts))
-                    .filter(type -> type != null)
-                    .findFirst().orElse(null);
+            return getOperator().getJavaType(root, contexts, getOperands());
         }
     }
 

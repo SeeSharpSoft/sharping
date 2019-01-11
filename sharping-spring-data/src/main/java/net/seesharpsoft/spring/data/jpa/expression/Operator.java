@@ -2,7 +2,10 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import org.springframework.util.Assert;
 
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.*;
+import java.util.Arrays;
+import java.util.List;
 
 public interface Operator {
 
@@ -13,7 +16,8 @@ public interface Operator {
 
     enum NAry {
         UNARY,
-        BINARY
+        BINARY,
+        TERTIARY
     }
 
     int getPrecedence();
@@ -23,6 +27,14 @@ public interface Operator {
     NAry getNAry();
 
     Object evaluate(Object... operands);
+
+    default Class getJavaType(Root root, List<TupleElement> contexts, Object... operands) {
+        return Arrays.stream(operands)
+                .filter(operand -> operand instanceof Operand)
+                .map(operand -> ((Operand) operand).getJavaType(root, contexts))
+                .filter(type -> type != null)
+                .findFirst().orElse(null);
+    }
 
     Expression createExpression(Root root,
                                 AbstractQuery query,

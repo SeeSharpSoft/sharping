@@ -20,7 +20,7 @@ public class ParserUT {
 
         assertThat(tokenInfos, contains(
                 new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "eq"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "1")
         ));
     }
@@ -32,11 +32,11 @@ public class ParserUT {
 
         assertThat(tokenInfos, contains(
                 new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "eq"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "'eq lt ne'"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "AND"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "AND"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "b"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "lt"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "lt"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "3")
         ));
     }
@@ -48,22 +48,22 @@ public class ParserUT {
 
         assertThat(tokenInfos, contains(
                 new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "eq"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "'eq lt ne'"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "AND"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "AND"),
                 new Tokenizer.TokenInfo(Token.BRACKET_OPEN, "("),
                 new Tokenizer.TokenInfo(Token.OPERAND, "b"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "lt"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "lt"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "3"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "or"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "or"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "c"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "gt"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "gt"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "'123'"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "or"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "or"),
                 new Tokenizer.TokenInfo(Token.UNARY_OPERATOR, "not"),
                 new Tokenizer.TokenInfo(Token.BRACKET_OPEN, "("),
                 new Tokenizer.TokenInfo(Token.OPERAND, "a/b"),
-                new Tokenizer.TokenInfo(Token.OPERATOR, "in"),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "in"),
                 new Tokenizer.TokenInfo(Token.OPERAND, "[test,test2]"),
                 new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, ")"),
                 new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, ")")
@@ -95,6 +95,15 @@ public class ParserUT {
 
         assertThat(operation, notNullValue());
         assertThat(operation.toString(), is("(({a} != ({z} / 2)) || (((({x} endsWith ({abc} + (5 - (2 * 3)))) != ({y} > 5)) && (({b} - {a}) > 0)) || (3 % 5)))"));
+    }
+
+    @Test
+    public void parser_should_return_correct_specification_with_if_else_case() throws ParseException, IllegalAccessException {
+        Parser parser = new Parser(Dialects.ODATA);
+        Operation operation = parser.parseExpression("ife(a ne (z div 2), abc add 5 sub (2 mul 3), (b sub a) mul (3 mod 5))");
+
+        assertThat(operation, notNullValue());
+        assertThat(operation.toString(), is("ife(({a} != ({z} / 2)),({abc} + (5 - (2 * 3))),(({b} - {a}) * (3 % 5)))"));
     }
 
 }
