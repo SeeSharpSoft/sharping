@@ -99,11 +99,11 @@ public class ParserUT {
 
     @Test
     public void parser_should_return_correct_specification_with_if_else_case() throws ParseException, IllegalAccessException {
-        Parser parser = new Parser(Dialects.ODATA);
-        Operation operation = parser.parseExpression("ife(a ne (z div 2), abc add 5 sub (2 mul 3), (b sub a) mul (3 mod 5))");
+        Parser parser = new Parser(Dialects.SHARP);
+        Operation operation = parser.parseExpression("if(a != (z / 2), abc + 5 - (2 * 3), (b - a) * (3 % 5))");
 
         assertThat(operation, notNullValue());
-        assertThat(operation.toString(), is("ife(({a} != ({z} / 2)),({abc} + (5 - (2 * 3))),(({b} - {a}) * (3 % 5)))"));
+        assertThat(operation.toString(), is("if(({a} != ({z} / 2)),({abc} + (5 - (2 * 3))),(({b} - {a}) * (3 % 5)))"));
     }
 
 }

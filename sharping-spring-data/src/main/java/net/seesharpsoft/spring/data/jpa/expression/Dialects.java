@@ -19,6 +19,7 @@ public class Dialects {
 
     public static final Dialect JAVA;
     public static final Dialect ODATA;
+    public static final Dialect SHARP;
 
     static {
         Dialects.Base dialect = new Dialects.Base();
@@ -43,17 +44,15 @@ public class Dialects {
         dialect.generateOperatorTokenPattern();
         dialect.addTokenPatterns(
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "startswith|endswith|substring"),
-                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "ife"),
                 Pair.of(Token.UNARY_OPERATOR, "not"),
                 Pair.of(Token.NULL, "null"),
-                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|ife|null)[^ (),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|null)[^ (),\\[\\]]+|\\[.+?\\]")
         );
         dialect.addOperators(
                 Pair.of("substring", Operators.IS_SUBSTRING),
                 Pair.of("startsWith", Operators.STARTS_WITH),
                 Pair.of("endsWith", Operators.ENDS_WITH),
-                Pair.of("not", Operators.NOT),
-                Pair.of("ife", Operators.IFE)
+                Pair.of("not", Operators.NOT)
         );
         ODATA = dialect;
 
@@ -85,6 +84,43 @@ public class Dialects {
                 Pair.of(Token.OPERAND, "'.+?'|(?!null)[^ !(),\\[\\]]+|\\[.+?\\]")
         );
         JAVA = dialect;
+
+        dialect = new Dialects.Base();
+        dialect.addOperators(
+                Pair.of("==", Operators.EQUALS),
+                Pair.of("!=", Operators.NOT_EQUALS),
+                Pair.of(">=", Operators.GREATER_THAN_OR_EQUALS),
+                Pair.of("<=", Operators.LESS_THAN_OR_EQUALS),
+                Pair.of("&&", Operators.AND),
+                Pair.of("||", Operators.OR),
+
+                Pair.of("+", Operators.ADD),
+                Pair.of("-", Operators.SUB),
+                Pair.of("*", Operators.MUL),
+                Pair.of("/", Operators.DIV),
+                Pair.of("%", Operators.MOD),
+
+                Pair.of(">", Operators.GREATER_THAN),
+                Pair.of("<", Operators.LESS_THAN),
+
+                Pair.of("!", Operators.NOT),
+
+                Pair.of("substring", Operators.IS_SUBSTRING),
+                Pair.of("startsWith", Operators.STARTS_WITH),
+                Pair.of("endsWith", Operators.ENDS_WITH),
+                Pair.of("if", Operators.IF),
+                Pair.of("count", Operators.COUNT)
+        );
+        dialect.addTokenPatterns(
+                Pair.of(Token.UNARY_OPERATOR, "[!]"),
+                Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
+                Pair.of(Token.UNARY_OPERATOR_METHOD, "count"),
+                Pair.of(Token.BINARY_OPERATOR_METHOD, "startswith|endswith|substring"),
+                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if"),
+                Pair.of(Token.NULL, "null"),
+                Pair.of(Token.OPERAND, "'.+?'|(?!startswith|endswith|substring|if|count|null)[^ !(),\\[\\]]+|\\[.+?\\]")
+        );
+        SHARP = dialect;
     }
 
     public static class Base implements Dialect {

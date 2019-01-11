@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -77,8 +78,19 @@ public class Operators {
         return result;
     }
 
-    public static final Operator IFE = new IfElseOperator();
-
+    public static final Operator IF = new IfElseOperator();
+    public static final Operator COUNT = new Operators.Unary<Object, Number>("count", 150, CriteriaBuilder::count, x -> {
+        if (x == null) {
+            return 0;
+        }
+        if (x instanceof Collection) {
+            return ((Collection) x).size();
+        }
+        if (x.getClass().isArray()) {
+            return ((Object[]) x).length;
+        }
+        return 1;
+    });
     public static final Operator AND = new Operators.Binary<>("&&", 40, CriteriaBuilder::and, Boolean::logicalAnd);
     public static final Operator OR = new Operators.Binary<>("||", 30, CriteriaBuilder::or, Boolean::logicalOr);
     public static final Operator NOT = new Operators.Unary<Boolean, Boolean>("!", 140, CriteriaBuilder::not, x -> !x) {
@@ -214,7 +226,7 @@ public class Operators {
     public static class IfElseOperator extends Operators.Base {
 
         public IfElseOperator() {
-            super("ife", NAry.TERTIARY, 20);
+            super("if", NAry.TERTIARY, 20);
         }
 
         @Override
