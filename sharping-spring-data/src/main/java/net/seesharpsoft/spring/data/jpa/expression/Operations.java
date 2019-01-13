@@ -51,6 +51,8 @@ public class Operations {
         return new Binary(Operators.OR, first, second);
     }
 
+    public static Operation ifElse(Object condition, Object ifCase, Object elseCase) { return new Tertiary(Operators.IF, condition, ifCase, elseCase); }
+
     public static class Unary extends Base {
         public Unary(Operator operator, Object operand) {
             super(operator, operand);

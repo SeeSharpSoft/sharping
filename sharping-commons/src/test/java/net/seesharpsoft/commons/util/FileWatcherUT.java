@@ -45,8 +45,8 @@ public class FileWatcherUT {
 
         Thread.sleep(500);
 
-        // TODO why 2?
-        assertThat(watcher.modifiedCounter, is(2));
+        // TODO sometimes its 2, why?
+        assertThat(watcher.modifiedCounter, is(1));
 
         watcher.stopWatching();
     }
