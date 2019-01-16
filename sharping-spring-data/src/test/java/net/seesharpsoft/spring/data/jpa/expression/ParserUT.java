@@ -73,36 +73,36 @@ public class ParserUT {
     @Test
     public void odata_parse_should_return_correct_specification_normal() throws ParseException, IllegalAccessException {
         Parser parser = new Parser(Dialects.ODATA);
-        Operation operation = parser.parseExpression("a eq 'eq lt ne' AND (/b. lt 3 or c gt '123' or not (a/b in [test,test2]))");
+        Operand operation = parser.parseExpression("a eq 'eq lt ne' AND (/b. lt 3 or c gt '123' or not (a/b in [test,test2]))");
 
-        assertThat(operation, notNullValue());
+        assertThat(operation, instanceOf(Operation.class));
         assertThat(operation.toString(), is("(({a} == 'eq lt ne') && (({b} < 3) || (({c} > '123') || ! ({a/b} IN {[test,test2]}))))"));
     }
 
     @Test
     public void odata_parse_should_return_correct_specification_complex() throws ParseException, IllegalAccessException {
         Parser parser = new Parser(Dialects.ODATA);
-        Operation operation = parser.parseExpression("not (not (a ne 'eq lt ne' AND (b lt 3 or c gt '123')) or startswith(field,'prefix') and not a/b in [test,test2])");
+        Operand operation = parser.parseExpression("not (not (a ne 'eq lt ne' AND (b lt 3 or c gt '123')) or startswith(field,'prefix') and not a/b in [test,test2])");
 
-        assertThat(operation, notNullValue());
+        assertThat(operation, instanceOf(Operation.class));
         assertThat(operation.toString(), is("! (! (({a} != 'eq lt ne') && (({b} < 3) || ({c} > '123'))) || (({field} startsWith 'prefix') && (! {a/b} IN {[test,test2]})))"));
     }
 
     @Test
     public void odata_parse_should_return_correct_specification_with_functions() throws ParseException, IllegalAccessException {
         Parser parser = new Parser(Dialects.ODATA);
-        Operation operation = parser.parseExpression("a ne (z div 2) or (endswith(x, abc add 5 sub (2 mul 3))) ne (y gt 5) AND (b sub a gt 0) or 3 mod 5");
+        Operand operation = parser.parseExpression("a ne (z div 2) or (endswith(x, abc add 5 sub (2 mul 3))) ne (y gt 5) AND (b sub a gt 0) or 3 mod 5");
 
-        assertThat(operation, notNullValue());
+        assertThat(operation, instanceOf(Operation.class));
         assertThat(operation.toString(), is("(({a} != ({z} / 2)) || (((({x} endsWith ({abc} + (5 - (2 * 3)))) != ({y} > 5)) && (({b} - {a}) > 0)) || (3 % 5)))"));
     }
 
     @Test
     public void parser_should_return_correct_specification_with_if_else_case() throws ParseException, IllegalAccessException {
         Parser parser = new Parser(Dialects.SHARP);
-        Operation operation = parser.parseExpression("if(a != (z / 2), abc + 5 - (2 * 3), (b - a) * (3 % 5))");
+        Operand operation = parser.parseExpression("if(a != (z / 2), abc + 5 - (2 * 3), (b - a) * (3 % 5))");
 
-        assertThat(operation, notNullValue());
+        assertThat(operation, instanceOf(Operation.class));
         assertThat(operation.toString(), is("if(({a} != ({z} / 2)),({abc} + (5 - (2 * 3))),(({b} - {a}) * (3 % 5)))"));
     }
 

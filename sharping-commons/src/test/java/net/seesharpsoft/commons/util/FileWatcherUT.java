@@ -1,5 +1,6 @@
 package net.seesharpsoft.commons.util;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,6 +31,7 @@ public class FileWatcherUT {
     }
 
     @Test
+    @Ignore
     public void should_watch_file() throws IOException, InterruptedException {
         File myFile = SharpIO.getFile("/filewatcher/changing.txt");
 

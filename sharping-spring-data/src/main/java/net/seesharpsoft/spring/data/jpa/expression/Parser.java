@@ -104,9 +104,9 @@ public class Parser {
         this(dialect, DefaultConversionService.getSharedInstance());
     }
 
-    public Operation parseExpression(String expression) throws ParseException {
+    public <T extends Operand> T parseExpression(String expression) throws ParseException {
         List<Tokenizer.TokenInfo<Token>> rpn = toRPN(tokenize(expression));
-        return evaluateRPN(rpn);
+        return (T)evaluateRPN(rpn);
     }
 
     public Operand parseValue(String value) {
@@ -231,7 +231,7 @@ public class Parser {
         return out;
     }
 
-    private Operation evaluateRPN(List<Tokenizer.TokenInfo<Token>> tokenInfos) {
+    private Operand evaluateRPN(List<Tokenizer.TokenInfo<Token>> tokenInfos) {
         Deque<Operand> operands = new LinkedList<>();
 
         for (Tokenizer.TokenInfo tokenInfo : tokenInfos) {
@@ -261,10 +261,6 @@ public class Parser {
             }
         }
 
-        Operand result = operands.pop();
-        if (!(result instanceof Operation)) {
-            throw new RuntimeException("operation expected!");
-        }
-        return (Operation)result;
+        return operands.pop();
     }
 }
