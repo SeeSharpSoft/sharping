@@ -36,6 +36,22 @@ public class Operands {
     }
 
     /**
+     * Find an existing join.
+     * @param from source
+     * @param name join name
+     * @param joinType join type
+     * @return existing join or {@code null} if not existent
+     */
+    public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
+        for (Join join : from.getJoins()) {
+            if ((name.equals(join.getAlias()) || name.equals(join.getAttribute().getName())) && (joinType == null || joinType.equals(join.getJoinType()))) {
+                return join;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Creates or reuses a join from given path to given field.
      *
      * @param from  current path
@@ -43,12 +59,8 @@ public class Operands {
      * @return a join to given field
      */
     public static final Join getJoin(From<?, ?> from, String field) {
-        for (Join join : from.getJoins()) {
-            if (join.getAttribute().getName().equals(field) && join.getJoinType().equals(JoinType.LEFT)) {
-                return join;
-            }
-        }
-        return from.join(field, JoinType.LEFT);
+        Join join = findJoin(from, field, JoinType.LEFT);
+        return join == null ? from.join(field, JoinType.LEFT) : join;
     }
 
     /**
