@@ -1,12 +1,11 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
 import net.seesharpsoft.commons.util.Tokenizer;
+import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 import org.junit.Test;
 
 import java.text.ParseException;
 import java.util.List;
-
-import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -104,6 +103,15 @@ public class ParserUT {
 
         assertThat(operation, instanceOf(Operation.class));
         assertThat(operation.toString(), is("if(({a} != ({z} / 2)),({abc} + (5 - (2 * 3))),(({b} - {a}) * (3 % 5)))"));
+    }
+
+    @Test
+    public void parser_should_return_correct_specification_with_as_operator() throws ParseException, IllegalAccessException {
+        Parser parser = new Parser(Dialects.SHARP);
+        Operand operation = parser.parseExpression("count(a) as countA");
+
+        assertThat(operation, instanceOf(Operation.class));
+        assertThat(operation.toString(), is("(count {a} as {countA})"));
     }
 
 }

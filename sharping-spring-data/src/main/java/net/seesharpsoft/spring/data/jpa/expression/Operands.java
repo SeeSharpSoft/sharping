@@ -43,6 +43,7 @@ public class Operands {
      * @return existing join or {@code null} if not existent
      */
     public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
+        Assert.notNull(from, "from must not be null");
         for (Join join : from.getJoins()) {
             if ((name.equals(join.getAlias()) || name.equals(join.getAttribute().getName())) && (joinType == null || joinType.equals(join.getJoinType()))) {
                 return join;
@@ -92,6 +93,13 @@ public class Operands {
         return roots;
     }
 
+    public static Set<Join<?, ?>> getAllJoins(From from) {
+        Set<Join<?, ?>> joins = new HashSet<>();
+        joins.addAll(from.getJoins());
+        joins.forEach(join -> joins.addAll(getAllJoins(join)));
+        return joins;
+    }
+
     public static final List<Selection> getAllSelections(Selection<?> selection) {
         if (selection == null) {
             return Collections.emptyList();
@@ -106,7 +114,9 @@ public class Operands {
 
     public static List<TupleElement> getContexts(AbstractQuery query) {
         List<TupleElement> elements = new ArrayList<>();
-        elements.addAll(getAllRoots(query));
+        Set<Root<?>> roots = getAllRoots(query);
+        elements.addAll(roots);
+        roots.forEach(root -> elements.addAll(getAllJoins(root)));
         elements.addAll(getAllSelections(query.getSelection()));
         return elements;
     }
@@ -156,7 +166,6 @@ public class Operands {
                     .filter(element -> element instanceof Expression && name.equalsIgnoreCase(element.getAlias()))
                     .map(element -> (Expression) element)
                     .findFirst().orElse(null);
-
         }
 
         @Override
@@ -227,7 +236,7 @@ public class Operands {
             return null;
         }
 
-        protected <T> T getValue() {
+        public <T> T getValue() {
             return this.value == null ? null : (T) this.value;
         }
 

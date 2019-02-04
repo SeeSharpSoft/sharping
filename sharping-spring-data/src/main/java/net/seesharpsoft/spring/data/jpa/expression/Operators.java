@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import net.seesharpsoft.spring.data.jpa.expression.Operator.NAry;
 import net.seesharpsoft.commons.TriFunction;
+import net.seesharpsoft.spring.data.jpa.expression.Operator.NAry;
 import org.springframework.util.Assert;
 
 import javax.persistence.TupleElement;
@@ -183,6 +183,31 @@ public class Operators {
         public Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
             Assert.isTrue(operands.length == 2, "exactly two operands expected for binary operator!");
             return builder.not(EQUALS.createExpression(root, query, builder, operands));
+        }
+    };
+
+    public static final Operator AS = new Operators.Base("as", NAry.BINARY, 10) {
+        @Override
+        public Object evaluate(Object... operands) {
+            return Operands.from(operands[0]).evaluate();
+        }
+
+        @Override
+        public Expression createExpression(Root root, AbstractQuery query, CriteriaBuilder builder, Object... operands) {
+            Assert.isTrue(operands.length == 2, "exactly two operands expected for binary operator!");
+            Operand leftOperand = operands == null ? null : Operands.from(operands[0]);
+            Class targetType = leftOperand == null ? null : leftOperand.getJavaType(root, Operands.getContexts(query));
+            Expression left = leftOperand == null ? null : leftOperand.asExpression(root, query, builder, targetType);
+
+            if (left != null) {
+                Operand rightOperand = operands == null ? null : Operands.from(operands[1]);
+                if (rightOperand instanceof Operands.Wrapper) {
+                    String alias = ((Operands.Wrapper) rightOperand).getValue().toString();
+                    left.alias(alias);
+                }
+            }
+
+            return left;
         }
     };
 

@@ -1,5 +1,6 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
+import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 import org.springframework.data.util.Pair;
 
 import java.util.Arrays;
@@ -8,8 +9,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 
 public class Dialects {
 
@@ -43,10 +42,10 @@ public class Dialects {
         );
         dialect.generateOperatorTokenPattern();
         dialect.addTokenPatterns(
-                Pair.of(Token.BINARY_OPERATOR_METHOD, "startswith|endswith|substring"),
-                Pair.of(Token.UNARY_OPERATOR, "not"),
-                Pair.of(Token.NULL, "null"),
-                Pair.of(Token.OPERAND, "'.+?'|(?!not|startswith|endswith|substring|null)[^ (),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
+                Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)"),
+                Pair.of(Token.NULL, "null(?=\\W|$)"),
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|null)\\s*\\()|null(\\W|$)|not\\W)[^ !(),\\[\\]]+")
         );
         dialect.addOperators(
                 Pair.of("substring", Operators.IS_SUBSTRING),
@@ -80,8 +79,8 @@ public class Dialects {
                 Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, ""),
                 Pair.of(Token.UNARY_OPERATOR, "[!]"),
-                Pair.of(Token.NULL, "null"),
-                Pair.of(Token.OPERAND, "'.+?'|(?!null)[^ !(),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.NULL, "null(?=\\W|$)"),
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!null(\\W|$))[^ !(),\\[\\]]+")
         );
         JAVA = dialect;
 
@@ -109,16 +108,17 @@ public class Dialects {
                 Pair.of("startsWith", Operators.STARTS_WITH),
                 Pair.of("endsWith", Operators.ENDS_WITH),
                 Pair.of("if", Operators.IF),
-                Pair.of("count", Operators.COUNT)
+                Pair.of("count", Operators.COUNT),
+                Pair.of("as", Operators.AS)
         );
         dialect.addTokenPatterns(
                 Pair.of(Token.UNARY_OPERATOR, "[!]"),
-                Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<"),
-                Pair.of(Token.UNARY_OPERATOR_METHOD, "count"),
-                Pair.of(Token.BINARY_OPERATOR_METHOD, "startswith|endswith|substring"),
-                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if"),
-                Pair.of(Token.NULL, "null"),
-                Pair.of(Token.OPERAND, "'.+?'|(?!startswith|endswith|substring|if|count|null)[^ !(),\\[\\]]+|\\[.+?\\]")
+                Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<|as(?=\\W)"),
+                Pair.of(Token.UNARY_OPERATOR_METHOD, "count(?=\\s*\\()"),
+                Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
+                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
+                Pair.of(Token.NULL, "null(?=\\W|$)"),
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W)[^ !(),\\[\\]]+")
         );
         SHARP = dialect;
     }
@@ -169,7 +169,7 @@ public class Dialects {
 
         protected void generateOperatorTokenPattern() {
             addTokenPattern(Token.BINARY_OPERATOR, String.join("|",
-                    this.operatorMap.keySet().stream().map(key -> Pattern.quote(key)).collect(Collectors.toList()))
+                    this.operatorMap.keySet().stream().map(key -> Pattern.quote(key) + "(?=\\W)").collect(Collectors.toList()))
             );
         }
     }

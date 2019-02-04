@@ -7,7 +7,7 @@ import org.springframework.util.Assert;
 import javax.persistence.criteria.*;
 import java.util.Objects;
 
-public class OperationSpecification implements Specification {
+public class OperationSpecification<T> implements Specification<T> {
 
     private Operation operation;
 
