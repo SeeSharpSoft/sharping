@@ -142,6 +142,11 @@ public class Dialects {
         }
 
         @Override
+        public Parser getParser() {
+            return parser;
+        }
+
+        @Override
         public Operator getOperator(String sequence) {
             return operatorMap.get(sequence);
         }
