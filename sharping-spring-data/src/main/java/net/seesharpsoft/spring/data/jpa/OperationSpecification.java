@@ -23,7 +23,7 @@ public class OperationSpecification<T> implements Specification<T> {
     @Override
     public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder cb) {
         Expression expression = getOperation().asExpression(root, query, cb, null);
-        Assert.isInstanceOf(Predicate.class, expression);
+        Assert.state(expression == null || expression instanceof Predicate, "result must be null or a predicate");
         return (Predicate)expression;
     }
 

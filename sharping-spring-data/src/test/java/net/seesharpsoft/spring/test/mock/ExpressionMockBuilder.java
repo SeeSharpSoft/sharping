@@ -95,6 +95,16 @@ public class ExpressionMockBuilder {
         }
 
         @Override
+        protected Object handleMethod(String methodName, InvocationOnMock invocation) {
+            switch (methodName) {
+                case "getParentPath":
+                    return null;
+                default:
+                    return super.handleMethod(methodName, invocation);
+            }
+        }
+
+        @Override
         public Object answer(InvocationOnMock invocation) throws Throwable {
             Object result = super.answer(invocation);
             if (result != UNDEFINED) {
@@ -122,6 +132,16 @@ public class ExpressionMockBuilder {
 
         public JoinAnswer(Object[] arguments) {
             super(arguments);
+        }
+
+        @Override
+        protected Object handleMethod(String methodName, InvocationOnMock invocation) {
+            switch (methodName) {
+                case "getOn":
+                    return null;
+                default:
+                    return super.handleMethod(methodName, invocation);
+            }
         }
     }
 }

@@ -8,11 +8,11 @@ public interface Operation extends Operand {
 
     List getOperands();
 
-    default Expression asExpression(Root root,
+    default Expression asExpression(From from,
                                     AbstractQuery query,
                              CriteriaBuilder builder,
                              Class targetType) {
-        return getOperator().createExpression(root, query, builder, getOperands().toArray());
+        return getOperator().createExpression(from, query, builder, getOperands().toArray());
     }
 
     default Object evaluate() {

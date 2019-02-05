@@ -3,6 +3,7 @@ package net.seesharpsoft.spring.data.jpa.expression;
 import org.springframework.util.Assert;
 
 import javax.persistence.TupleElement;
+import javax.persistence.criteria.From;
 import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collections;
@@ -149,7 +150,7 @@ public class Operations {
         }
 
         @Override
-        public Class getJavaType(Root root, List<TupleElement> contexts) {
+        public Class getJavaType(From root, List<TupleElement> contexts) {
             return getOperator().getJavaType(root, contexts, getOperands());
         }
     }

@@ -60,8 +60,8 @@ public class Operands {
      * @return a join to given field
      */
     public static final Join getJoin(From<?, ?> from, String field) {
-        Join join = findJoin(from, field, JoinType.LEFT);
-        return join == null ? from.join(field, JoinType.LEFT) : join;
+        Join join = findJoin(from, field, JoinType.INNER);
+        return join == null ? from.join(field, JoinType.INNER) : join;
     }
 
     /**
@@ -84,8 +84,8 @@ public class Operands {
         return current.get(paths[lastIndex]);
     }
 
-    public static Set<Root<?>> getAllRoots(AbstractQuery query) {
-        Set<Root<?>> roots = new HashSet<>();
+    public static Set<From> getAllRoots(AbstractQuery query) {
+        Set<From> roots = new HashSet<>();
         roots.addAll(query.getRoots());
         if (query instanceof Subquery) {
             roots.addAll(getAllRoots(((Subquery)query).getParent()));
@@ -115,7 +115,7 @@ public class Operands {
 
     public static List<TupleElement> getContexts(AbstractQuery query) {
         List<TupleElement> elements = new ArrayList<>();
-        Set<Root<?>> roots = getAllRoots(query);
+        Set<From> roots = getAllRoots(query);
         elements.addAll(roots);
         roots.forEach(root -> elements.addAll(getAllJoins(root)));
         elements.addAll(getAllSelections(query.getSelection()));
@@ -153,7 +153,7 @@ public class Operands {
             return String.format("{%s}", this.<String>getValue());
         }
 
-        protected Expression findExpression(Root root, List<TupleElement> tupleElements, String name) {
+        protected Expression findExpression(From root, List<TupleElement> tupleElements, String name) {
             Assert.notNull(name, "name must not be null");
             if (root != null) {
                 try {
@@ -170,12 +170,12 @@ public class Operands {
         }
 
         @Override
-        public Expression asExpression(Root root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
+        public Expression asExpression(From root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
             return findExpression(root, getContexts(query), getValue());
         }
 
         @Override
-        public Class getJavaType(Root root, List<TupleElement> contexts) {
+        public Class getJavaType(From root, List<TupleElement> contexts) {
             Expression expression = findExpression(root, contexts, getValue());
             return expression == null ? null : expression.getJavaType();
         }
@@ -201,7 +201,7 @@ public class Operands {
         }
 
         @Override
-        public Expression asExpression(Root root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
+        public Expression asExpression(From root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
             Object value = this.getValue();
             if (value == null) {
                 return criteriaBuilder.nullLiteral(void.class);
@@ -213,7 +213,7 @@ public class Operands {
                 return ((Operand)value).asExpression(root, query, criteriaBuilder, targetType);
             }
             if (value instanceof Specification) {
-                return ((Specification)value).toPredicate(root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
+                return ((Specification)value).toPredicate((Root) root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
             }
             if (value instanceof Iterable) {
                 final Map mapped = new HashMap();
@@ -227,7 +227,7 @@ public class Operands {
         }
 
         @Override
-        public Class getJavaType(Root root, List<TupleElement> contexts) {
+        public Class getJavaType(From root, List<TupleElement> contexts) {
             if (this.getValue() instanceof Expression) {
                 return this.<Expression>getValue().getJavaType();
             }

@@ -16,10 +16,10 @@ public interface Operand {
 
     Object evaluate();
 
-    Expression asExpression(Root root,
+    Expression asExpression(From from,
                             AbstractQuery query,
                             CriteriaBuilder criteriaBuilder,
                             Class targetType);
 
-    Class getJavaType(Root root, List<TupleElement> contexts);
+    Class getJavaType(From from, List<TupleElement> contexts);
 }

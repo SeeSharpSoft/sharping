@@ -28,15 +28,15 @@ public interface Operator {
 
     Object evaluate(Object... operands);
 
-    default Class getJavaType(Root root, List<TupleElement> contexts, Object... operands) {
+    default Class getJavaType(From from, List<TupleElement> contexts, Object... operands) {
         return Arrays.stream(operands)
                 .filter(operand -> operand instanceof Operand)
-                .map(operand -> ((Operand) operand).getJavaType(root, contexts))
+                .map(operand -> ((Operand) operand).getJavaType(from, contexts))
                 .filter(type -> type != null)
                 .findFirst().orElse(null);
     }
 
-    Expression createExpression(Root root,
+    Expression createExpression(From from,
                                 AbstractQuery query,
                                 CriteriaBuilder builder,
                                 Object... operands);
