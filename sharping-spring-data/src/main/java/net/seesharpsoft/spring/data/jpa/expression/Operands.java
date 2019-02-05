@@ -95,8 +95,9 @@ public class Operands {
 
     public static Set<Join<?, ?>> getAllJoins(From from) {
         Set<Join<?, ?>> joins = new HashSet<>();
-        joins.addAll(from.getJoins());
-        joins.forEach(join -> joins.addAll(getAllJoins(join)));
+        Set<Join<?, ?>> fromJoins = from.getJoins();
+        joins.addAll(fromJoins);
+        fromJoins.forEach(join -> joins.addAll(getAllJoins(join)));
         return joins;
     }
 
