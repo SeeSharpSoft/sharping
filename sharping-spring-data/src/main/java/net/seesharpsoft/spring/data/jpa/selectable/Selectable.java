@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Selectable {
 
-    Class<?> from();
+    Class<?> from() default void.class;
 
     Joins joins() default @Joins({});
 

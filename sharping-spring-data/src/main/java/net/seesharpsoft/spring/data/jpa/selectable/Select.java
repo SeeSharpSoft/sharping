@@ -8,5 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Select {
-    String value();
+    String value() default "";
+
+    boolean ignore() default false;
 }
