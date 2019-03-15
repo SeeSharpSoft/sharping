@@ -69,7 +69,7 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
         }
     }
 
-    private void writeResponseStatus(OutputStreamWriter writer, BatchResponse.Entity entry) throws IOException {
+    protected void writeResponseStatus(OutputStreamWriter writer, BatchResponse.Entity entry) throws IOException {
         HttpStatus status = entry.getStatus();
 
         if (status == null) {
@@ -83,7 +83,7 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
         writer.write(CRLF);
     }
 
-    private void writePartContentHeader(OutputStreamWriter writer, HttpHeaders headers, int contentLength) throws IOException {
+    protected void writePartContentHeader(OutputStreamWriter writer, HttpHeaders headers, int contentLength) throws IOException {
         MediaType contentType = headers.getContentType();
 
         if (contentType == null) {
