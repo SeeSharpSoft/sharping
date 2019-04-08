@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Repeatable(Joins.class)
 public @interface Join {
 
-    Class<?> entity();
+    String value();
 
     JoinType type() default JoinType.LEFT;
 

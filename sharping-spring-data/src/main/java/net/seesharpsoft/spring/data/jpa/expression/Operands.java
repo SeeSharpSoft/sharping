@@ -9,6 +9,7 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.TupleElement;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -46,11 +47,25 @@ public class Operands {
     public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
         Assert.notNull(from, "from must not be null");
         for (Join join : from.getJoins()) {
-            if ((name.equals(join.getAlias()) || name.equals(join.getAttribute().getName())) && (joinType == null || joinType.equals(join.getJoinType()))) {
+            if ((name.equalsIgnoreCase(join.getAlias()) || name.equalsIgnoreCase(join.getAttribute().getName())) &&
+                    (joinType == null || joinType.equals(join.getJoinType()))) {
                 return join;
             }
         }
         return null;
+    }
+
+    /**
+     * Creates or reuses a join from given path to given field.
+     *
+     * @param from     current path
+     * @param field    target field
+     * @param joinType join type
+     * @return a join to given field
+     */
+    public static final Join getJoin(From<?, ?> from, String field, JoinType joinType) {
+        Join join = findJoin(from, field, joinType);
+        return join == null ? from.join(field, joinType) : join;
     }
 
     /**
@@ -61,28 +76,81 @@ public class Operands {
      * @return a join to given field
      */
     public static final Join getJoin(From<?, ?> from, String field) {
-        Join join = findJoin(from, field, JoinType.LEFT);
-        return join == null ? from.join(field, JoinType.LEFT) : join;
+        return getJoin(from, field, JoinType.LEFT);
     }
 
     /**
-     * Returns a path from given path.
+     * Parses the given elements for the given alias.
      *
-     * @param from       the starting path
-     * @param stringPath the string representation of the path
+     * @param nameOrAlias the alias to search for
+     * @param elements    available elements
+     * @return the found element as expression or null
+     */
+    public static final Expression findExpression(String nameOrAlias, List<TupleElement> elements) {
+        Assert.notNull(elements, "elements must not be null!");
+        return elements.stream()
+                .filter(element ->
+                        (element instanceof Expression && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
+                                (element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
+                )
+                .map(element -> (Expression) element)
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Returns an expression or null if not found.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @param query             the query
+     * @return an expression
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
+        return getPath(from, nameOrAliasOrPath, getContexts(query));
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @param elements          available elements to search in
      * @return a path
      */
-    public static final Path getPath(From from, String stringPath) {
-        if (stringPath == null || stringPath.isEmpty()) {
+    public static final Expression getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
+        Assert.notNull(elements, "elements must not be null");
+        if (nameOrAliasOrPath == null || nameOrAliasOrPath.isEmpty()) {
             return from;
         }
-        From current = from;
-        String[] paths = stringPath.split("[/.\\\\]");
+        Path current = from;
+        String[] paths = nameOrAliasOrPath.split("[/.\\\\]");
+        int firstIndex = 0;
         int lastIndex = paths.length - 1;
-        for (int index = 0; index < lastIndex; ++index) {
-            current = getJoin(current, paths[index]);
+        Expression expression = findExpression(paths[0], elements);
+        if (expression != null) {
+            if (paths.length == 1) {
+                return expression;
+            } else if (expression instanceof Path) {
+                current = (Path) expression;
+                ++firstIndex;
+            }
+        }
+
+        for (int index = firstIndex; index < lastIndex; ++index) {
+            current = getJoin((From) current, paths[index]);
         }
         return current.get(paths[lastIndex]);
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @return a path
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath) {
+        return getPath(from, nameOrAliasOrPath, Collections.emptyList());
     }
 
     public static Set<Root<?>> getAllRoots(AbstractQuery query) {
@@ -154,30 +222,14 @@ public class Operands {
             return String.format("{%s}", this.<String>getValue());
         }
 
-        protected Expression findExpression(From root, List<TupleElement> tupleElements, String name) {
-            Assert.notNull(name, "name must not be null");
-            if (root != null) {
-                try {
-                    return getPath(root, name);
-                } catch (IllegalArgumentException exc) {
-                    // TODO do not rely on an exception
-                }
-            }
-
-            return tupleElements.stream()
-                    .filter(element -> element instanceof Expression && name.equalsIgnoreCase(element.getAlias()))
-                    .map(element -> (Expression) element)
-                    .findFirst().orElse(null);
-        }
-
         @Override
         public Expression asExpression(From root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
-            return findExpression(root, getContexts(query), getValue());
+            return getPath(root, getValue(), query);
         }
 
         @Override
         public Class getJavaType(From root, List<TupleElement> contexts) {
-            Expression expression = findExpression(root, contexts, getValue());
+            Expression expression = getPath(root, getValue(), contexts);
             return expression == null ? null : expression.getJavaType();
         }
     }
