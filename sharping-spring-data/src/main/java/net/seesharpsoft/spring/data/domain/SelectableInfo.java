@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.data.domain;
 
 import lombok.Getter;
+import net.seesharpsoft.spring.data.jpa.expression.Operand;
 import net.seesharpsoft.spring.data.jpa.expression.Operation;
 import net.seesharpsoft.spring.data.jpa.selectable.*;
 import org.springframework.util.ReflectionUtils;
@@ -20,7 +21,7 @@ public class SelectableInfo<T> {
         protected final Field field;
 
         @Getter
-        protected final Operation selection;
+        protected final Operand selection;
 
         @Getter
         protected final String alias;
@@ -34,7 +35,7 @@ public class SelectableInfo<T> {
             this.selection = parser.parseExpression(expression);
         }
 
-        public Operation getSelection() {
+        public Operand getSelection() {
             return this.selection;
         }
     }
@@ -80,7 +81,6 @@ public class SelectableInfo<T> {
 
     public SelectableInfo(SqlParser parser, Class<T> selectableClass) {
         this.selectableClass = selectableClass;
-        this.fields = createSelectableFields(parser);
 
         Selectable selectableAnnotation = selectableClass.getAnnotation(Selectable.class);
         if (selectableAnnotation != null) {
@@ -95,6 +95,8 @@ public class SelectableInfo<T> {
             this.where = null;
             this.having = null;
         }
+
+        this.fields = createSelectableFields(parser);
     }
 
     protected boolean isSelectField(Field field) {

@@ -17,6 +17,7 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
@@ -26,7 +27,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
     protected final SelectableInfo<T> selectableInfo;
 
-    public SelectableRepositoryImpl(EntityManager entityManager, SqlParser sqlParser, Class selectableClass) {
+    public SelectableRepositoryImpl(EntityManager entityManager, SqlParser sqlParser, Class<T> selectableClass) {
         this.entityManager = entityManager;
         this.sqlParser = sqlParser;
         this.selectableInfo = new SelectableInfo(sqlParser, selectableClass);
@@ -150,15 +151,15 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         CriteriaQuery query = createQuery(spec, pageable == null ? null : pageable.getSort());
         TypedQuery typedQuery = entityManager.createQuery(query);
         if (pageable != null) {
-            typedQuery.setFirstResult(pageable.getOffset());
+            typedQuery.setFirstResult((int) pageable.getOffset());
             typedQuery.setMaxResults(pageable.getPageSize());
         }
         return typedQuery;
     }
 
     @Override
-    public T findOne(Specification spec) {
-        TypedQuery query = createQuery(spec, (Pageable)null);
+    public Optional<T> findOne(Specification spec) {
+        TypedQuery query = createQuery(spec, (Pageable) null);
 
         return null;
     }

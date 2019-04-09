@@ -19,6 +19,7 @@ public class Dialects {
     public static final Dialect JAVA;
     public static final Dialect ODATA;
     public static final Dialect SHARP;
+    public static final Dialect SQL;
 
     static {
         Dialects.Base dialect = new Dialects.Base();
@@ -121,6 +122,44 @@ public class Dialects {
                 Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W)[^ !(),\\[\\]]+")
         );
         SHARP = dialect;
+
+        dialect = new Dialects.Base();
+        dialect.addOperators(
+                Pair.of("=", Operators.EQUALS),
+                Pair.of("<>", Operators.NOT_EQUALS),
+                Pair.of(">=", Operators.GREATER_THAN_OR_EQUALS),
+                Pair.of("<=", Operators.LESS_THAN_OR_EQUALS),
+                Pair.of("AND", Operators.AND),
+                Pair.of("OR", Operators.OR),
+
+                Pair.of("+", Operators.ADD),
+                Pair.of("-", Operators.SUB),
+                Pair.of("*", Operators.MUL),
+                Pair.of("/", Operators.DIV),
+                Pair.of("%", Operators.MOD),
+
+                Pair.of(">", Operators.GREATER_THAN),
+                Pair.of("<", Operators.LESS_THAN),
+
+                Pair.of("NOT", Operators.NOT),
+
+                Pair.of("substring", Operators.IS_SUBSTRING),
+                Pair.of("startsWith", Operators.STARTS_WITH),
+                Pair.of("endsWith", Operators.ENDS_WITH),
+                Pair.of("if", Operators.IF),
+                Pair.of("count", Operators.COUNT),
+                Pair.of("as", Operators.AS)
+        );
+        dialect.addTokenPatterns(
+                Pair.of(Token.UNARY_OPERATOR, "NOT(?=\\W)"),
+                Pair.of(Token.BINARY_OPERATOR, "=|!=|>=|<=|AND(?=\\W)|OR(?=\\W)|[+]|[-]|[*]|/|%|>|<|as(?=\\W)"),
+                Pair.of(Token.UNARY_OPERATOR_METHOD, "count(?=\\s*\\()"),
+                Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
+                Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
+                Pair.of(Token.NULL, "null(?=\\W|$)"),
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W)[^ (),\\[\\]]+")
+        );
+        SQL = dialect;
     }
 
     public static class Base implements Dialect {

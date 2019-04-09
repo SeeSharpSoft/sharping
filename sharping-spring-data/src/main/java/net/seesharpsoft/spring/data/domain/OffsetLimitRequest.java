@@ -6,11 +6,11 @@ import org.springframework.util.Assert;
 
 public class OffsetLimitRequest implements Pageable {
     
-    private final int offset;
+    private final long offset;
     private final int limit;
     private final Sort sort;
     
-    public OffsetLimitRequest(int offset, int limit, Sort sort) {
+    public OffsetLimitRequest(long offset, int limit, Sort sort) {
         Assert.isTrue(offset >= 0, "offset must be greater or equal than 0!");
         Assert.isTrue(limit > 0, "limit must be greater than 0!");
         this.offset = offset;
@@ -18,13 +18,13 @@ public class OffsetLimitRequest implements Pageable {
         this.sort = sort;
     }
     
-    public OffsetLimitRequest(int offset, int limit) {
-        this(offset, limit, null);
+    public OffsetLimitRequest(long offset, int limit) {
+        this(offset, limit, Sort.unsorted());
     }
     
     @Override
     public int getPageNumber() {
-        return Math.floorDiv(getOffset() + getPageSize() - 1, getPageSize());
+        return (int) Math.floorDiv(getOffset() + getPageSize() - 1, getPageSize());
     }
 
     @Override
@@ -33,7 +33,7 @@ public class OffsetLimitRequest implements Pageable {
     }
 
     @Override
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
@@ -49,16 +49,16 @@ public class OffsetLimitRequest implements Pageable {
 
     @Override
     public Pageable previousOrFirst() {
-        int start = getOffset() - getPageSize();
+        long start = getOffset() - getPageSize();
         if (start < 0) {
             start = 0;
         }
-        return new OffsetLimitRequest(start, getOffset() - start, getSort());
+        return new OffsetLimitRequest(start, (int) (getOffset() - start), getSort());
     }
 
     @Override
     public Pageable first() {
-        int firstPageSize = getOffset() % getPageSize();
+        int firstPageSize = (int) getOffset() % getPageSize();
         return new OffsetLimitRequest(0, firstPageSize, getSort());
     }
 
