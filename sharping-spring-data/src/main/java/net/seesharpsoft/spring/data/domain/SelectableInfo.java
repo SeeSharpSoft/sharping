@@ -107,7 +107,7 @@ public class SelectableInfo<T> {
 
     protected List<FieldInfo> createSelectableFields(SqlParser parser) {
         final List<FieldInfo> selectableFields = new ArrayList<>();
-        ReflectionUtils.doWithFields(rootClass, field -> {
+        ReflectionUtils.doWithFields(selectableClass, field -> {
             if (isSelectField(field)) {
                 selectableFields.add(new FieldInfo(parser, field, field.getAnnotation(Alias.class)));
             }

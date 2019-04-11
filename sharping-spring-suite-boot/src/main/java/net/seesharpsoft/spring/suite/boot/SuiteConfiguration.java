@@ -35,7 +35,7 @@ public class SuiteConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     ConfigurationProperties properties;
-    
+
     @Bean
     @ConditionalOnMissingBean
     @Conditional(SpecificationConverterEnabledCondition.class)
@@ -53,7 +53,7 @@ public class SuiteConfiguration extends WebMvcConfigurationSupport {
                 throw new UnhandledSwitchCaseException(properties.getExpressionDialect());
         }
     }
-    
+
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = ConfigurationProperties.WEB_RESOLVER_SPECIFICATION)
@@ -67,7 +67,7 @@ public class SuiteConfiguration extends WebMvcConfigurationSupport {
     SortHandlerMethodArgumentResolver sortHandlerMethodArgumentResolver() {
         return new SortHandlerMethodArgumentResolver();
     }
-    
+
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = ConfigurationProperties.WEB_RESOLVER_LIMIT_OFFSET)
@@ -92,7 +92,7 @@ public class SuiteConfiguration extends WebMvcConfigurationSupport {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = ConfigurationProperties.SELECTABLE_ENABLED)
-    SelectableRepositoryRegistryPostProcessor selectableRepositoryRegistryPostProcessor(Environment environment) {
-        return new SelectableRepositoryRegistryPostProcessor(environment);
+    SharpingRegistryPostProcessor selectableRepositoryRegistryPostProcessor(Environment environment) {
+        return new SharpingRegistryPostProcessor(environment);
     }
 }

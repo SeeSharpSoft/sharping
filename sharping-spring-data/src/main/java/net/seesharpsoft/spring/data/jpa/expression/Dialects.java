@@ -114,7 +114,7 @@ public class Dialects {
         );
         dialect.addTokenPatterns(
                 Pair.of(Token.UNARY_OPERATOR, "[!]"),
-                Pair.of(Token.BINARY_OPERATOR, "==|!=|>=|<=|&&|\\|\\||[+]|[-]|[*]|/|%|>|<|as(?=\\W)"),
+                Pair.of(Token.BINARY_OPERATOR, "==|[!]=|[>]=|[<]=|&&|[|][|]|[+]|[-]|[*]|/|%|[>]|[<]|as(?=\\W)"),
                 Pair.of(Token.UNARY_OPERATOR_METHOD, "count(?=\\s*\\()"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
@@ -131,6 +131,7 @@ public class Dialects {
                 Pair.of("<=", Operators.LESS_THAN_OR_EQUALS),
                 Pair.of("AND", Operators.AND),
                 Pair.of("OR", Operators.OR),
+                Pair.of("||", Operators.CONCAT),
 
                 Pair.of("+", Operators.ADD),
                 Pair.of("-", Operators.SUB),
@@ -151,13 +152,13 @@ public class Dialects {
                 Pair.of("as", Operators.AS)
         );
         dialect.addTokenPatterns(
-                Pair.of(Token.UNARY_OPERATOR, "NOT(?=\\W)"),
-                Pair.of(Token.BINARY_OPERATOR, "=|!=|>=|<=|AND(?=\\W)|OR(?=\\W)|[+]|[-]|[*]|/|%|>|<|as(?=\\W)"),
+                Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)"),
+                Pair.of(Token.BINARY_OPERATOR, "=|[<][>]|[>]=|[<]=|AND(?=\\W)|OR(?=\\W)|\\|\\||[+]|[-]|[*]|/|%|[>]|[<]|as(?=\\W)"),
                 Pair.of(Token.UNARY_OPERATOR_METHOD, "count(?=\\s*\\()"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
-                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W)[^ (),\\[\\]]+")
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W|not\\W)[^ (),\\[\\]]+")
         );
         SQL = dialect;
     }

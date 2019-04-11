@@ -3,7 +3,7 @@
     <parent>
         <groupId>net.seesharpsoft.sharping</groupId>
         <artifactId>sharping-parent</artifactId>
-        <version>0.18.0</version>
+        <version>0.20.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -46,19 +46,16 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

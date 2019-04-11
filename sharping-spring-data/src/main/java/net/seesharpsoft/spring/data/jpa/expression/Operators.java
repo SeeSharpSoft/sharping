@@ -91,6 +91,7 @@ public class Operators {
         }
         return 1;
     });
+    public static final Operator CONCAT = new Operators.Binary<String, String, String>("concat", 90, CriteriaBuilder::concat, (a, b) -> (a == null ? "" : a) + (b == null ? "" : b));
     public static final Operator AND = new Operators.Binary<>("&&", 40, CriteriaBuilder::and, Boolean::logicalAnd);
     public static final Operator OR = new Operators.Binary<>("||", 30, CriteriaBuilder::or, Boolean::logicalOr);
     public static final Operator NOT = new Operators.Unary<Boolean, Boolean>("!", 140, CriteriaBuilder::not, x -> !x) {
@@ -285,8 +286,8 @@ public class Operators {
             Operand elseCaseOperand = operands == null ? null : Operands.from(operands[2]);
             Class targetType = decideTargetJavaClass(root, Operands.getContexts(query), ifCaseOperand, elseCaseOperand);
             Expression ifCondition = ifConditionOperand == null ? null : ifConditionOperand.asExpression(root, query, builder, targetType);
-            Expression ifCase = ifCaseOperand == null ? null : ifCaseOperand.asExpression(root, query, builder, targetType);
-            Expression elseCase = elseCaseOperand == null ? null : elseCaseOperand.asExpression(root, query, builder, targetType);
+            Expression ifCase = ifCaseOperand == null ? builder.nullLiteral(targetType) : ifCaseOperand.asExpression(root, query, builder, targetType);
+            Expression elseCase = elseCaseOperand == null ? builder.nullLiteral(targetType) : elseCaseOperand.asExpression(root, query, builder, targetType);
 
             return createExpression(root, query, builder, ifCondition, ifCase, elseCase);
         }

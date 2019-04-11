@@ -9,16 +9,16 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 
-public class SelectableRepositoryRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
+public class SharpingRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
     protected final Environment environment;
 
-    public SelectableRepositoryRegistryPostProcessor(Environment environment) {
+    public SharpingRegistryPostProcessor(Environment environment) {
         Assert.notNull(environment, "environment must not be null!");
         this.environment = environment;
     }
 
-    protected Class<? extends  SelectableRepository> getImplementationClass() {
+    protected Class<? extends  SelectableRepository> getSelectableRepositoryImplementation() {
         try {
             return (Class<? extends SelectableRepository>)Class.forName(environment.getProperty(ConfigurationProperties.SELECTABLE_IMPL_CLASS, SelectableRepositoryImpl.class.getName()));
         } catch (ClassNotFoundException exc) {
@@ -26,7 +26,7 @@ public class SelectableRepositoryRegistryPostProcessor implements BeanDefinition
         }
     }
 
-    protected String[] getBasePackages() {
+    protected String[] getSelectableBasePackages() {
         String basePackages = environment.getProperty(ConfigurationProperties.SELECTABLE_BASE_PACKAGES);
         if (basePackages == null) {
             return new String[0];
@@ -36,7 +36,7 @@ public class SelectableRepositoryRegistryPostProcessor implements BeanDefinition
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
-        SelectableInterfaceScanRegistrar.registerSelectableRepositoryDefinitions(beanDefinitionRegistry, environment, getImplementationClass(), getBasePackages());
+        SelectableInterfaceScanRegistrar.registerSelectableRepositoryDefinitions(beanDefinitionRegistry, environment, getSelectableRepositoryImplementation(), getSelectableBasePackages());
     }
 
     @Override

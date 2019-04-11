@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
 import net.seesharpsoft.spring.data.jpa.CriteriaQueryWrapper;
+import net.seesharpsoft.spring.data.jpa.ExpressionHolder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -65,7 +66,7 @@ public class Operands {
      */
     public static final Join getJoin(From<?, ?> from, String field, JoinType joinType) {
         Join join = findJoin(from, field, joinType);
-        return join == null ? from.join(field, joinType) : join;
+        return join == null ? createJoin(from, field, joinType) : join;
     }
 
     /**
@@ -80,6 +81,17 @@ public class Operands {
     }
 
     /**
+     * Creates a join from given path to given field.
+     *
+     * @param from  current path
+     * @param field target field
+     * @return a join to given field
+     */
+    public static final Join createJoin(From<?, ?> from, String field, JoinType joinType) {
+        return from.join(field, joinType);
+    }
+
+    /**
      * Parses the given elements for the given alias.
      *
      * @param nameOrAlias the alias to search for
@@ -90,10 +102,10 @@ public class Operands {
         Assert.notNull(elements, "elements must not be null!");
         return elements.stream()
                 .filter(element ->
-                        (element instanceof Expression && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
+                        ((element instanceof Expression || element instanceof ExpressionHolder) && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
                                 (element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
                 )
-                .map(element -> (Expression) element)
+                .map(element -> element instanceof ExpressionHolder ? ((ExpressionHolder) element).getExpression() : (Expression) element)
                 .findFirst().orElse(null);
     }
 
@@ -110,20 +122,29 @@ public class Operands {
     }
 
     /**
+     * Splits the path by '/', '\' or '.'.
+     *
+     * @param fullPath the full path like "user/name"
+     * @return the parts as array, e.g. ["user", "name"]
+     */
+    public static final String[] getPathParts(String fullPath) {
+        return fullPath.split("[/.\\\\]");
+    }
+
+    /**
      * Returns an expression for given path.
      *
-     * @param from              the starting path
-     * @param nameOrAliasOrPath name, alias or path of the expression
-     * @param elements          available elements to search in
+     * @param from     the starting path
+     * @param paths    all parts of path split
+     * @param elements available elements to search in
      * @return a path
      */
-    public static final Expression getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
+    public static final Expression getPath(From from, String[] paths, List<TupleElement> elements) {
         Assert.notNull(elements, "elements must not be null");
-        if (nameOrAliasOrPath == null || nameOrAliasOrPath.isEmpty()) {
+        if (paths == null || paths.length == 0) {
             return from;
         }
         Path current = from;
-        String[] paths = nameOrAliasOrPath.split("[/.\\\\]");
         int firstIndex = 0;
         int lastIndex = paths.length - 1;
         Expression expression = findExpression(paths[0], elements);
@@ -140,6 +161,21 @@ public class Operands {
             current = getJoin((From) current, paths[index]);
         }
         return current.get(paths[lastIndex]);
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @param elements          available elements to search in
+     * @return a path
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
+        if (nameOrAliasOrPath == null || nameOrAliasOrPath.isEmpty()) {
+            return from;
+        }
+        return getPath(from, getPathParts(nameOrAliasOrPath), elements);
     }
 
     /**
@@ -229,7 +265,7 @@ public class Operands {
 
         @Override
         public Class getJavaType(From root, List<TupleElement> contexts) {
-            Expression expression = getPath(root, getValue(), contexts);
+            Expression expression = getPath(root, (String) getValue(), contexts);
             return expression == null ? null : expression.getJavaType();
         }
     }
