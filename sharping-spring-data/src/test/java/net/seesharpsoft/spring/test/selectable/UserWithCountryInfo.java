@@ -9,7 +9,7 @@ import net.seesharpsoft.spring.test.model.User;
         from = User.class
 )
 @AllArgsConstructor
-public class CountryUser {
+public class UserWithCountryInfo {
 
     private int id;
 

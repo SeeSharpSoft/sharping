@@ -48,7 +48,7 @@ public class Operands {
     public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
         Assert.notNull(from, "from must not be null");
         for (Join join : from.getJoins()) {
-            if ((name.equalsIgnoreCase(join.getAlias()) || name.equalsIgnoreCase(join.getAttribute().getName())) &&
+            if ((name.equalsIgnoreCase(join.getAlias()) || (join.getAlias() == null && name.equalsIgnoreCase(join.getAttribute().getName()))) &&
                     (joinType == null || joinType.equals(join.getJoinType()))) {
                 return join;
             }
@@ -103,7 +103,7 @@ public class Operands {
         return elements.stream()
                 .filter(element ->
                         ((element instanceof Expression || element instanceof ExpressionHolder) && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
-                                (element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
+                                (element.getAlias() == null && element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
                 )
                 .map(element -> element instanceof ExpressionHolder ? ((ExpressionHolder) element).getExpression() : (Expression) element)
                 .findFirst().orElse(null);

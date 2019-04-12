@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.test;
 
 import net.seesharpsoft.spring.test.model.Country;
+import net.seesharpsoft.spring.test.model.Team;
 import net.seesharpsoft.spring.test.model.User;
 
 public class ObjectMother {
@@ -27,5 +28,12 @@ public class ObjectMother {
     }
     public static final Country getCountryUS() {
         return new Country(3, "US", "United States");
+    }
+
+    public static final Team getTeamA() {
+        return new Team(1, "Team A");
+    }
+    public static final Team getTeamB() {
+        return new Team(2, "Team B");
     }
 }

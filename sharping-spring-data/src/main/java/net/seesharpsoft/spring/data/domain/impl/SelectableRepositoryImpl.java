@@ -135,11 +135,6 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-//    private AbstractQuery prepareOrderBy(Root root, AbstractQuery query, CriteriaBuilder builder) {
-//        return query;
-//    }
-
-
     protected CriteriaQuery<T> prepareQuery(Root root, CriteriaQuery query, CriteriaBuilder builder) {
         return (CriteriaQuery<T>) prepareHaving(
                 root,
@@ -147,7 +142,11 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
                         root,
                         prepareWhere(
                                 root,
-                                prepareSelection(root, prepareJoins(root, query, builder), builder),
+                                prepareSelection(
+                                        root,
+                                        prepareJoins(root, query, builder),
+                                        builder
+                                ),
                                 builder
                         ),
                         builder

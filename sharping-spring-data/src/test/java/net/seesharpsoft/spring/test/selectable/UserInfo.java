@@ -9,7 +9,7 @@ import net.seesharpsoft.spring.test.model.User;
         from = User.class
 )
 @AllArgsConstructor
-public class SelectableUser {
+public class UserInfo {
 
     private int id;
 
