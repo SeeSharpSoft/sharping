@@ -232,7 +232,7 @@ public class Operators {
 
         @Override
         protected Expression createExpression(From root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
-            return builder.like(left, String.format("\\%%s\\%", right));
+            return builder.like(left, String.format("%%%s%%", right));
         }
     };
     public static final Operator STARTS_WITH = new LikeOperatorBase("startsWith", 90) {
@@ -243,7 +243,7 @@ public class Operators {
 
         @Override
         protected Expression createExpression(From root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
-            return builder.like(left, String.format("%s\\%", right));
+            return builder.like(left, String.format("%s%%", right));
         }
     };
     public static final Operator ENDS_WITH = new LikeOperatorBase("endsWith", 90) {
@@ -254,7 +254,7 @@ public class Operators {
 
         @Override
         protected Expression createExpression(From root, AbstractQuery query, CriteriaBuilder builder, Expression left, String right) {
-            return builder.like(left, String.format("\\%%s", right));
+            return builder.like(left, String.format("%%%s", right));
         }
     };
 
