@@ -1,18 +1,16 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
+import javafx.util.Pair;
 import net.seesharpsoft.spring.test.mock.CriteriaBuilderMockBuilder;
 import net.seesharpsoft.spring.test.mock.CriteriaQueryMockBuilder;
 import net.seesharpsoft.spring.test.mock.ExpressionMockBuilder;
 import org.junit.Test;
-import javafx.util.Pair;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -95,6 +93,16 @@ public class OperatorsUT {
         Root root = ExpressionMockBuilder.newRoot(null);
 
         Operators.NOT.createExpression(root, query, builder);
+    }
+
+    @Test
+    public void startsWith_operator_should_create_a_working_condition() {
+        CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
+        CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
+        Root root = ExpressionMockBuilder.newRoot(null);
+
+        Expression expression = Operators.STARTS_WITH.createExpression(root, query, builder, "PATH", "NEEDLE");
+        assertThat(expression.toString(), is("like('PATH', NEEDLE%)"));
     }
 
     @Test
