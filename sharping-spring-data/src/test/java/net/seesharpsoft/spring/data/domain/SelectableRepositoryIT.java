@@ -13,6 +13,7 @@ import net.seesharpsoft.spring.test.model.User;
 import net.seesharpsoft.spring.test.selectable.CountryInfo;
 import net.seesharpsoft.spring.test.selectable.UserWithCountryInfo;
 import net.seesharpsoft.spring.test.selectable.UserInfo;
+import net.seesharpsoft.spring.test.selectable.UserWithOptionalCountryInfo;
 import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,7 +118,6 @@ public class SelectableRepositoryIT {
         assertThat(resultList)
                 .extracting("id", "fullName")
                 .containsExactly(
-                        Tuple.tuple(100, null),
                         Tuple.tuple(3, "Carla X"),
                         Tuple.tuple(2, "Bob Y"),
                         Tuple.tuple(1, "Abby Z")
@@ -128,6 +128,23 @@ public class SelectableRepositoryIT {
     @Test
     public void should_find_all_with_join() {
         SelectableRepository<UserWithCountryInfo> repo = getSelectableRepository(UserWithCountryInfo.class);
+
+        List<UserWithCountryInfo> resultList = repo.findAll(
+                Sort.by(Sort.Direction.ASC, "lastName")
+        );
+
+        assertThat(resultList)
+                .extracting("id", "fullName", "country", "countrySharingUserCount")
+                .containsExactly(
+                        Tuple.tuple(3, "Carla X", carla.getCountry().getName(), 1L),
+                        Tuple.tuple(2, "Bob Y", bob.getCountry().getName(), 2L),
+                        Tuple.tuple(1, "Abby Z", abby.getCountry().getName(), 2L)
+                );
+    }
+
+    @Test
+    public void should_find_all_sorted_with_optional() {
+        SelectableRepository<UserWithCountryInfo> repo = getSelectableRepository(UserWithOptionalCountryInfo.class);
 
         List<UserWithCountryInfo> resultList = repo.findAll(
                 Sort.by(Sort.Direction.ASC, "lastName")
