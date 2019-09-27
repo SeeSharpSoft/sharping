@@ -11,7 +11,7 @@ public interface Dialect {
         METHOD_PARAMETER_SEPARATOR,
         BRACKET_OPEN,
         BRACKET_CLOSE,
-        NULL;
+        NULL
     }
 
     default boolean isCaseSensitive() {
@@ -21,4 +21,6 @@ public interface Dialect {
     Operator getOperator(String sequence);
 
     String getRegexPattern(Token token);
+
+    Parser getParser();
 }

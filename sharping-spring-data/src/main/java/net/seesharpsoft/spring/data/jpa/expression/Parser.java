@@ -3,6 +3,7 @@ package net.seesharpsoft.spring.data.jpa.expression;
 import net.seesharpsoft.UnhandledSwitchCaseException;
 import net.seesharpsoft.commons.util.Lexer;
 import net.seesharpsoft.commons.util.Tokenizer;
+import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -14,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
 import static net.seesharpsoft.spring.data.jpa.expression.Dialect.Token.*;
 
 public class Parser {
@@ -64,8 +64,7 @@ public class Parser {
 
     private ConversionService conversionService;
     private final Dialect dialect;
-    private final Tokenizer<Token> tokenizer;
-    private final Lexer<Token> lexer;
+    private Lexer<Token> lexer;
 
     private static Tokenizer<Token> createTokenizer(Dialect dialect) {
         Tokenizer<Token> tokenizer = new Tokenizer();
@@ -96,12 +95,17 @@ public class Parser {
     public Parser(Dialect dialect, ConversionService conversionService) {
         this.dialect = dialect;
         this.setConversionService(conversionService);
-        this.tokenizer = createTokenizer(dialect);
-        this.lexer = createLexer(this.tokenizer);
     }
 
     public Parser(Dialect dialect) {
         this(dialect, DefaultConversionService.getSharedInstance());
+    }
+
+    protected Lexer<Token> getLexer() {
+        if (this.lexer == null) {
+            this.lexer = createLexer(createTokenizer(dialect));
+        }
+        return this.lexer;
     }
 
     public <T extends Operand> T parseExpression(String expression) throws ParseException {
@@ -132,7 +136,7 @@ public class Parser {
     }
 
     protected List<Tokenizer.TokenInfo<Token>> tokenize(String input) throws ParseException {
-        return lexer.tokenize(input);
+        return getLexer().tokenize(input);
     }
 
     private Operand getOperand(Tokenizer.TokenInfo<Token> tokenInfo) {

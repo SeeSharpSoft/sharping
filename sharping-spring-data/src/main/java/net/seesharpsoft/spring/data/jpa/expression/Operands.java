@@ -1,6 +1,7 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
 import net.seesharpsoft.spring.data.jpa.CriteriaQueryWrapper;
+import net.seesharpsoft.spring.data.jpa.ExpressionHolder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -9,6 +10,7 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.TupleElement;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -37,19 +39,34 @@ public class Operands {
 
     /**
      * Find an existing join.
-     * @param from source
-     * @param name join name
+     *
+     * @param from     source
+     * @param name     join name
      * @param joinType join type
      * @return existing join or {@code null} if not existent
      */
     public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
         Assert.notNull(from, "from must not be null");
         for (Join join : from.getJoins()) {
-            if ((name.equals(join.getAlias()) || name.equals(join.getAttribute().getName())) && (joinType == null || joinType.equals(join.getJoinType()))) {
+            if ((name.equalsIgnoreCase(join.getAlias()) || (join.getAlias() == null && name.equalsIgnoreCase(join.getAttribute().getName()))) &&
+                    (joinType == null || joinType.equals(join.getJoinType()))) {
                 return join;
             }
         }
         return null;
+    }
+
+    /**
+     * Creates or reuses a join from given path to given field.
+     *
+     * @param from     current path
+     * @param field    target field
+     * @param joinType join type
+     * @return a join to given field
+     */
+    public static final Join getJoin(From<?, ?> from, String field, JoinType joinType) {
+        Join join = findJoin(from, field, joinType);
+        return join == null ? createJoin(from, field, joinType) : join;
     }
 
     /**
@@ -60,35 +77,123 @@ public class Operands {
      * @return a join to given field
      */
     public static final Join getJoin(From<?, ?> from, String field) {
-        Join join = findJoin(from, field, JoinType.INNER);
-        return join == null ? from.join(field, JoinType.INNER) : join;
+        return getJoin(from, field, JoinType.INNER);
     }
 
     /**
-     * Returns a path from given path.
+     * Creates a join from given path to given field.
      *
-     * @param from       the starting path
-     * @param stringPath the string representation of the path
+     * @param from  current path
+     * @param field target field
+     * @return a join to given field
+     */
+    public static final Join createJoin(From<?, ?> from, String field, JoinType joinType) {
+        return from.join(field, joinType);
+    }
+
+    /**
+     * Parses the given elements for the given alias.
+     *
+     * @param nameOrAlias the alias to search for
+     * @param elements    available elements
+     * @return the found element as expression or null
+     */
+    public static final Expression findExpression(String nameOrAlias, List<TupleElement> elements) {
+        Assert.notNull(elements, "elements must not be null!");
+        return elements.stream()
+                .filter(element ->
+                        ((element instanceof Expression || element instanceof ExpressionHolder) && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
+                                (element.getAlias() == null && element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
+                )
+                .map(element -> element instanceof ExpressionHolder ? ((ExpressionHolder) element).getExpression() : (Expression) element)
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Returns an expression or null if not found.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @param query             the query
+     * @return an expression
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
+        return getPath(from, nameOrAliasOrPath, getContexts(query));
+    }
+
+    /**
+     * Splits the path by '/', '\' or '.'.
+     *
+     * @param fullPath the full path like "user/name"
+     * @return the parts as array, e.g. ["user", "name"]
+     */
+    public static final String[] getPathParts(String fullPath) {
+        return fullPath.split("[/.\\\\]");
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from     the starting path
+     * @param paths    all parts of path split
+     * @param elements available elements to search in
      * @return a path
      */
-    public static final Path getPath(From from, String stringPath) {
-        if (stringPath == null || stringPath.isEmpty()) {
+    public static final Expression getPath(From from, String[] paths, List<TupleElement> elements) {
+        Assert.notNull(elements, "elements must not be null");
+        if (paths == null || paths.length == 0) {
             return from;
         }
-        From current = from;
-        String[] paths = stringPath.split("[/.\\\\]");
+        Path current = from;
+        int firstIndex = 0;
         int lastIndex = paths.length - 1;
-        for (int index = 0; index < lastIndex; ++index) {
-            current = getJoin(current, paths[index]);
+        Expression expression = findExpression(paths[0], elements);
+        if (expression != null) {
+            if (paths.length == 1) {
+                return expression;
+            } else if (expression instanceof Path) {
+                current = (Path) expression;
+                ++firstIndex;
+            }
+        }
+
+        for (int index = firstIndex; index < lastIndex; ++index) {
+            current = getJoin((From) current, paths[index]);
         }
         return current.get(paths[lastIndex]);
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @param elements          available elements to search in
+     * @return a path
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
+        if (nameOrAliasOrPath == null || nameOrAliasOrPath.isEmpty()) {
+            return from;
+        }
+        return getPath(from, getPathParts(nameOrAliasOrPath), elements);
+    }
+
+    /**
+     * Returns an expression for given path.
+     *
+     * @param from              the starting path
+     * @param nameOrAliasOrPath name, alias or path of the expression
+     * @return a path
+     */
+    public static final Expression getPath(From from, String nameOrAliasOrPath) {
+        return getPath(from, nameOrAliasOrPath, Collections.emptyList());
     }
 
     public static Set<From> getAllRoots(AbstractQuery query) {
         Set<From> roots = new HashSet<>();
         roots.addAll(query.getRoots());
         if (query instanceof Subquery) {
-            roots.addAll(getAllRoots(((Subquery)query).getParent()));
+            roots.addAll(getAllRoots(((Subquery) query).getParent()));
         }
         return roots;
     }
@@ -153,30 +258,14 @@ public class Operands {
             return String.format("{%s}", this.<String>getValue());
         }
 
-        protected Expression findExpression(From root, List<TupleElement> tupleElements, String name) {
-            Assert.notNull(name, "name must not be null");
-            if (root != null) {
-                try {
-                    return getPath(root, name);
-                } catch (IllegalArgumentException exc) {
-                    // TODO do not rely on an exception
-                }
-            }
-
-            return tupleElements.stream()
-                    .filter(element -> element instanceof Expression && name.equalsIgnoreCase(element.getAlias()))
-                    .map(element -> (Expression) element)
-                    .findFirst().orElse(null);
-        }
-
         @Override
         public Expression asExpression(From root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
-            return findExpression(root, getContexts(query), getValue());
+            return getPath(root, getValue(), query);
         }
 
         @Override
         public Class getJavaType(From root, List<TupleElement> contexts) {
-            Expression expression = findExpression(root, contexts, getValue());
+            Expression expression = getPath(root, (String) getValue(), contexts);
             return expression == null ? null : expression.getJavaType();
         }
     }
@@ -207,21 +296,21 @@ public class Operands {
                 return criteriaBuilder.nullLiteral(void.class);
             }
             if (value instanceof Expression) {
-                return (Expression)value;
+                return (Expression) value;
             }
             if (value instanceof Operand) {
-                return ((Operand)value).asExpression(root, query, criteriaBuilder, targetType);
+                return ((Operand) value).asExpression(root, query, criteriaBuilder, targetType);
             }
             if (value instanceof Specification) {
-                return ((Specification)value).toPredicate((Root) root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
+                return ((Specification) value).toPredicate((Root) root, new CriteriaQueryWrapper<>(query), criteriaBuilder);
             }
             if (value instanceof Iterable) {
                 final Map mapped = new HashMap();
-                ((Iterable)value).forEach(item -> mapped.put(item, item));
+                ((Iterable) value).forEach(item -> mapped.put(item, item));
                 value = mapped;
             }
             if (value instanceof Map) {
-                return criteriaBuilder.values((Map)value);
+                return criteriaBuilder.values((Map) value);
             }
             return criteriaBuilder.literal(targetType == null || targetType.equals(Void.TYPE) ? getValue() : conversionService.convert(getValue(), targetType));
         }

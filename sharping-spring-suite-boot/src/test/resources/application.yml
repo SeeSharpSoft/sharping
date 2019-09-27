@@ -1,0 +1,4 @@
+sharping:
+  selectable:
+    enabled: true
+    packages: net.seesharpsoft.spring.suite.test.selectable

@@ -3,7 +3,10 @@ package net.seesharpsoft.spring.data.jpa.expression;
 import org.springframework.util.Assert;
 
 import javax.persistence.TupleElement;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.AbstractQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,7 +39,7 @@ public interface Operator {
                 .findFirst().orElse(null);
     }
 
-    Expression createExpression(From from,
+    Expression createExpression(From root,
                                 AbstractQuery query,
                                 CriteriaBuilder builder,
                                 Object... operands);

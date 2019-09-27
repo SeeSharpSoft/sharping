@@ -15,7 +15,7 @@ public class OffsetLimitRequestUT {
         
         OffsetLimitRequest offsetLimitRequest = new OffsetLimitRequest(545, 12, sort);
         
-        MatcherAssert.assertThat(offsetLimitRequest.getOffset(), equalTo(545));
+        MatcherAssert.assertThat(offsetLimitRequest.getOffset(), equalTo(545L));
         MatcherAssert.assertThat(offsetLimitRequest.getPageSize(), equalTo(12));
         MatcherAssert.assertThat(offsetLimitRequest.getSort(), equalTo(sort));
     }
@@ -103,7 +103,7 @@ public class OffsetLimitRequestUT {
 
         Pageable first = offsetLimitRequest.first();
         MatcherAssert.assertThat(first.getPageNumber(), equalTo(0));
-        MatcherAssert.assertThat(first.getOffset(), equalTo(0));
+        MatcherAssert.assertThat(first.getOffset(), equalTo(0L));
         MatcherAssert.assertThat(first.getPageSize(), equalTo(1));
     }
 }

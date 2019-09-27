@@ -3,9 +3,10 @@ package net.seesharpsoft.spring.multipart.boot.demo.entity;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cache.CacheException;
-import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
+import org.hibernate.cache.spi.access.CollectionDataAccess;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.collection.BasicCollectionPersister;
 import org.hibernate.persister.entity.AbstractEntityPersister;
@@ -16,7 +17,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 
 public class ManyToManyEntityAwareCollectionPersister extends BasicCollectionPersister {
-    public ManyToManyEntityAwareCollectionPersister(Collection collectionBinding, CollectionRegionAccessStrategy cacheAccessStrategy, PersisterCreationContext creationContext) throws MappingException, CacheException {
+    public ManyToManyEntityAwareCollectionPersister(Collection collectionBinding, CollectionDataAccess cacheAccessStrategy, PersisterCreationContext creationContext) throws MappingException, CacheException {
         super(collectionBinding, cacheAccessStrategy, creationContext);
     }
 
@@ -53,7 +54,7 @@ public class ManyToManyEntityAwareCollectionPersister extends BasicCollectionPer
     }
 
     @Override
-    protected int doUpdateRows(Serializable id, PersistentCollection collection, SessionImplementor session) throws HibernateException {
+    protected int doUpdateRows(Serializable id, PersistentCollection collection, SharedSessionContractImplementor session) throws HibernateException {
         return 0;
     }
 }
