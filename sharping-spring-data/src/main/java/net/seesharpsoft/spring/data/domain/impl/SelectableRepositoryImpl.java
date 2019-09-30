@@ -179,8 +179,9 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         List<Expression<?>> groupBys = new ArrayList<>(query.getGroupList());
         while (sortIterator.hasNext()) {
             Sort.Order sortOrder = sortIterator.next();
-            Expression orderExpression = Operands.findExpression(sortOrder.getProperty(), elements);
-            if (!groupBys.contains(orderExpression)) {
+            Expression orderExpression = Operands.getPath(root, sortOrder.getProperty(), elements);
+            Assert.notNull(orderExpression, String.format("order expression for '%s' not found!", sortOrder.getProperty()));
+            if (!groupBys.contains(orderExpression) && !isAggregateFunction(orderExpression)) {
                 groupBys.add(orderExpression);
             }
             orders.add(sortOrder.isAscending() ? builder.asc(orderExpression) : builder.desc(orderExpression));
@@ -190,7 +191,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-    protected CriteriaQuery<T> createQuery(Specification specification, Sort sort) {
+    protected CriteriaQuery<T> createCriteriaQuery(Specification specification, Sort sort) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(selectableInfo.getSelectableClass());
         Root root = query.from(selectableInfo.getRootClass());
@@ -200,9 +201,13 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-    protected TypedQuery createQuery(Specification spec, Pageable pageable) {
-        CriteriaQuery query = createQuery(spec, pageable == null ? null : pageable.getSort());
-        TypedQuery typedQuery = entityManager.createQuery(query);
+    protected TypedQuery createTypedQuery(Specification spec, Sort sort) {
+        CriteriaQuery query = createCriteriaQuery(spec, sort);
+        return entityManager.createQuery(query);
+    }
+
+    protected TypedQuery createTypedQuery(Specification spec, Pageable pageable) {
+        TypedQuery typedQuery = createTypedQuery(spec, pageable == null ? null : pageable.getSort());
         if (pageable != null) {
             typedQuery.setFirstResult((int) pageable.getOffset());
             typedQuery.setMaxResults(pageable.getPageSize());
@@ -219,25 +224,25 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
     @Override
     public List<T> findAll(Specification spec) {
-        TypedQuery<T> typedQuery = createQuery(spec, (Pageable) null);
-        return typedQuery.getResultList();
+        return findAll(spec, (Sort) null);
     }
 
     @Override
     public Page<T> findAll(Specification spec, Pageable pageable) {
-        TypedQuery<T> typedQuery = createQuery(spec, pageable);
+        TypedQuery<T> typedQuery = createTypedQuery(spec, pageable);
         List<T> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, resultList.size());
     }
 
     @Override
     public List<T> findAll(Specification spec, Sort sort) {
-        TypedQuery<T> typedQuery = createQuery(spec, PageRequest.of(0, Integer.MAX_VALUE, sort));
+        TypedQuery<T> typedQuery = createTypedQuery(spec, sort);
         return typedQuery.getResultList();
     }
 
     @Override
     public long count(Specification spec) {
+        // TODO create count/count-distinct query
         return findAll(spec).size();
     }
 }
