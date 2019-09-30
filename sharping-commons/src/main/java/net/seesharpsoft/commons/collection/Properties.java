@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 /**
  * Hierarchical properties that are by default case-insensitive.
  */
-public class Properties implements Map {
+public class Properties implements Map, Serializable {
+
+    private static final long serialVersionUID = -6559480194752358941L;
 
     public static final String DEFAULT_KEY_VALUE_SEPARATOR = "=";
     public static final String COMMENT_LINE_BEGINNING = "#";
@@ -45,7 +47,7 @@ public class Properties implements Map {
         return read(file, DEFAULT_KEY_VALUE_SEPARATOR, encoding);
     }
 
-    private final Map properties;
+    private final TreeMap properties; // concrete type to ensure serialization
     private final Properties parentProperties;
 
     public Properties(Properties parentProperties, boolean caseSensitive) {

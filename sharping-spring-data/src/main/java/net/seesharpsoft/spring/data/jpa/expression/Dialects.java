@@ -119,7 +119,7 @@ public class Dialects {
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
-                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$)|as\\W)[^ !(),\\[\\]]+")
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count)\\s*\\()|null(\\W|$))[^ !(),\\[\\]]+")
         );
         SHARP = dialect;
 
@@ -150,16 +150,17 @@ public class Dialects {
                 Pair.of("if", Operators.IF),
                 Pair.of("count", Operators.COUNT),
                 Pair.of("count_distinct", Operators.COUNT_DISTINCT),
-                Pair.of("as", Operators.AS)
+                Pair.of("as", Operators.AS),
+                Pair.of("in", Operators.IN)
         );
         dialect.addTokenPatterns(
                 Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)"),
-                Pair.of(Token.BINARY_OPERATOR, "=|[<][>]|[>]=|[<]=|AND(?=\\W)|OR(?=\\W)|\\|\\||[+]|[-]|[*]|/|%|[>]|[<]|as(?=\\W)"),
+                Pair.of(Token.BINARY_OPERATOR, "=|[<][>]|[>]=|[<]=|\\|\\||[+]|[-]|[*]|/|%|[>]|[<]|and(?=\\W)|or(?=\\W)|as(?=\\W)|in(?=\\W)"),
                 Pair.of(Token.UNARY_OPERATOR_METHOD, "(count|count_distinct)(?=\\s*\\()"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
-                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count|count_distinct)\\s*\\()|null(\\W|$)|as\\W|not\\W)[^ (),\\[\\]]+")
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count|count_distinct)\\s*\\()|null(\\W|$)|not\\W)[^ (),\\[\\]]+")
         );
         SQL = dialect;
     }

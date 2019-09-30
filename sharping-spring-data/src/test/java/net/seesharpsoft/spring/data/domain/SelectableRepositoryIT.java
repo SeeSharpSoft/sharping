@@ -8,12 +8,13 @@ import net.seesharpsoft.spring.data.jpa.expression.Operands;
 import net.seesharpsoft.spring.data.jpa.expression.Operations;
 import net.seesharpsoft.spring.test.ObjectMother;
 import net.seesharpsoft.spring.test.TestApplication;
+import net.seesharpsoft.spring.test.model.Country;
 import net.seesharpsoft.spring.test.model.Team;
 import net.seesharpsoft.spring.test.model.User;
 import net.seesharpsoft.spring.test.selectable.CountryInfo;
-import net.seesharpsoft.spring.test.selectable.UserWithCountryInfo;
 import net.seesharpsoft.spring.test.selectable.UserInfo;
 import net.seesharpsoft.spring.test.selectable.UserWithOptionalCountryInfo;
+import net.seesharpsoft.spring.test.selectable.UserWithCountryInfo;
 import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +42,8 @@ public class SelectableRepositoryIT {
     @Autowired
     private EntityManager entityManager;
 
-    private SelectableRepository selectableRepository;
-
     User abby, bob, carla;
+    Country france, germany, us;
 
     @Before
     public void beforeEach() {
@@ -53,11 +52,14 @@ public class SelectableRepositoryIT {
         carla = ObjectMother.getUserCarla();
         Team teamA = entityManager.merge(ObjectMother.getTeamA());
         Team teamB = entityManager.merge(ObjectMother.getTeamB());
-        abby.setCountry(entityManager.merge(ObjectMother.getCountryDE()));
+        germany = entityManager.merge(ObjectMother.getCountryDE());
+        france = entityManager.merge(ObjectMother.getCountryFR());
+        us = entityManager.merge(ObjectMother.getCountryUS());
+        abby.setCountry(germany);
         abby.setTeams(new HashSet<>(Arrays.asList(teamA, teamB)));
-        bob.setCountry(entityManager.merge(ObjectMother.getCountryDE()));
+        bob.setCountry(germany);
         bob.setTeams(new HashSet<>(Arrays.asList(teamA)));
-        carla.setCountry(entityManager.merge(ObjectMother.getCountryFR()));
+        carla.setCountry(france);
         carla.setTeams(new HashSet<>(Arrays.asList(teamB)));
         abby = entityManager.merge(abby);
         bob = entityManager.merge(bob);
@@ -186,5 +188,65 @@ public class SelectableRepositoryIT {
         assertThat(countryInfo)
                 .extracting("id", "name", "userCount", "teamCount")
                 .containsExactly(abby.getCountry().getId(), abby.getCountry().getName(), 2L, 2L);
+    }
+
+    @Test
+    public void should_find_all_sorted_by_country_name() {
+        SelectableRepository<CountryInfo> repo = getSelectableRepository(CountryInfo.class);
+
+        List<CountryInfo> countryInfos = repo.findAll(
+                new OperationSpecification<>(
+                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                ),
+                Sort.by(Sort.Direction.ASC, "name")
+        );
+
+        assertThat(countryInfos)
+                .extracting("id", "name", "userCount", "teamCount")
+                .containsExactly(
+                        Tuple.tuple(france.getId(), france.getName(), 1L, 1L),
+                        Tuple.tuple(germany.getId(), germany.getName(), 2L, 2L)
+                );
+    }
+
+    @Test
+    public void should_find_all_sorted_desc_by_userCount() {
+        SelectableRepository<CountryInfo> repo = getSelectableRepository(CountryInfo.class);
+
+        List<CountryInfo> countryInfos = repo.findAll(
+                new OperationSpecification<>(
+                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                ),
+                Sort.by(Sort.Direction.DESC, "userCount")
+        );
+
+        assertThat(countryInfos)
+                .extracting("id", "name", "userCount", "teamCount")
+                .containsExactly(
+                        Tuple.tuple(germany.getId(), germany.getName(), 2L, 2L),
+                        Tuple.tuple(france.getId(), france.getName(), 1L, 1L)
+                );
+    }
+
+    @Test
+    public void should_count() {
+        SelectableRepository<CountryInfo> repo = getSelectableRepository(CountryInfo.class);
+
+        long count = repo.count();
+
+        assertThat(count).isEqualTo(3);
+    }
+
+    @Test
+    public void should_count_with_specification() {
+        SelectableRepository<CountryInfo> repo = getSelectableRepository(CountryInfo.class);
+
+        long count = repo.count(
+                new OperationSpecification<>(
+                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                )
+        );
+
+        assertThat(count).isEqualTo(2);
     }
 }
