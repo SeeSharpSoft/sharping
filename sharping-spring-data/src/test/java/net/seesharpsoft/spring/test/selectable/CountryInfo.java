@@ -12,9 +12,10 @@ import net.seesharpsoft.spring.test.model.Country;
 
 @Selectable(
         from = Country.class,
-        joins = @Joins(
-                @Join(value = "users", alias = "allUsers")
-        )
+        joins = @Joins({
+                @Join(value = "users", alias = "allUsers"),
+                @Join(value = "allUsers.teams", alias = "allUsersTeams")
+        })
 )
 @Setter
 @Getter
@@ -29,6 +30,6 @@ public class CountryInfo {
     @Select("COUNT_DISTINCT(allUsers.id)")
     private long userCount;
 
-    @Select("COUNT_DISTINCT(allUsers.teams.id)")
+    @Select("COUNT_DISTINCT(allUsersTeams.id)")
     private long teamCount;
 }
