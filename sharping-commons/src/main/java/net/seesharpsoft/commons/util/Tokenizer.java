@@ -6,15 +6,12 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Tokenizer<T>
-{
-    protected static class Token<T>
-    {
+public class Tokenizer<T> {
+    public static class Token<T> {
         public final Pattern regex;
         public final T token;
 
-        public Token(T token, Pattern regex)
-        {
+        public Token(T token, Pattern regex) {
             Objects.requireNonNull(token, "token must be not null!");
             Objects.requireNonNull(regex, "regex must be not null!");
             this.regex = regex;
@@ -31,7 +28,7 @@ public class Tokenizer<T>
             if (!(other instanceof Tokenizer.Token)) {
                 return false;
             }
-            Token otherToken = (Token)other;
+            Token otherToken = (Token) other;
             return Objects.equals(this.token, otherToken.token) &&
                     Objects.equals(this.regex.pattern(), otherToken.regex.pattern()) &&
                     Objects.equals(this.regex.flags(), otherToken.regex.flags());
@@ -43,20 +40,82 @@ public class Tokenizer<T>
         }
     }
 
-    public static class TokenInfo<T>
-    {
-        public final T token;
-        public final String sequence;
+    public static class CharRange {
+        public static CharRange EMPTY = new CharRange();
 
-        public TokenInfo(T token, String sequence)
-        {
+        protected final CharSequence text;
+        protected final int start;
+        protected final int end;
+
+        public CharRange(CharSequence text, int start, int end) {
+            this.text = text == null ? "" : text;
+            this.start = start;
+            this.end = end;
+        }
+
+        public CharRange(CharSequence text, int start) {
+            this(text, start, start + text.length());
+        }
+
+        public CharRange(CharSequence text) {
+            this(text, 0);
+        }
+
+        public CharRange() {
+            this("");
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Tokenizer.CharRange)) {
+                return false;
+            }
+            CharRange otherTokenInfo = (CharRange) other;
+            return Objects.equals(this.text, otherTokenInfo.text) && Objects.equals(this.start, otherTokenInfo.start) && Objects.equals(this.end, otherTokenInfo.end);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.text, this.start, this.end);
+        }
+
+        public CharSequence source() {
+            return text;
+        }
+
+        public CharSequence text() {
+            return text.subSequence(this.start, this.end);
+        }
+
+        public int length() {
+            return text.length();
+        }
+
+        public int start() {
+            return this.start;
+        }
+
+        public int end() {
+            return this.end;
+        }
+    }
+
+    public static class TokenInfo<T> {
+        protected final T token;
+        protected final CharRange text;
+
+        public TokenInfo(T token, CharRange text) {
             this.token = token;
-            this.sequence = sequence;
+            this.text = text;
+        }
+
+        public TokenInfo(T token, String text) {
+            this(token, new CharRange(text));
         }
 
         @Override
         public String toString() {
-            return String.format("%s:%s", this.token, this.sequence);
+            return String.format("%s:%s", this.token, this.text);
         }
 
         @Override
@@ -64,13 +123,25 @@ public class Tokenizer<T>
             if (!(other instanceof Tokenizer.TokenInfo)) {
                 return false;
             }
-            TokenInfo otherTokenInfo = (TokenInfo)other;
-            return Objects.equals(this.token, otherTokenInfo.token) && Objects.equals(this.sequence, otherTokenInfo.sequence);
+            TokenInfo otherTokenInfo = (TokenInfo) other;
+            return Objects.equals(this.token, otherTokenInfo.token) && Objects.equals(this.text, otherTokenInfo.text);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.token, this.sequence);
+            return Objects.hash(this.token, this.text);
+        }
+
+        public T token() {
+            return token;
+        }
+
+        public CharRange textRange() {
+            return text;
+        }
+
+        public String text() {
+            return text.text().toString();
         }
     }
 
@@ -79,11 +150,9 @@ public class Tokenizer<T>
     private Pattern trimPatternEnd;
     private boolean caseSensitive;
 
-    public Tokenizer()
-    {
+    public Tokenizer() {
         tokenMap = new HashMap<>();
         setCaseSensitive(true);
-        setTrimPattern("\r| ");
     }
 
     public boolean getCaseSensitive() {
@@ -112,6 +181,10 @@ public class Tokenizer<T>
         return this.add(token, regex, getCaseSensitive());
     }
 
+    public Collection<Token<T>> getTokenCollection() {
+        return tokenMap.values();
+    }
+
     protected Token<T> getToken(T token) {
         return tokenMap.get(token);
     }
@@ -121,50 +194,60 @@ public class Tokenizer<T>
             this.trimPatternStart = null;
             this.trimPatternEnd = null;
         } else {
-            this.trimPatternStart = Pattern.compile(String.format("^(%s)*", regexTrimPattern), getCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
-            this.trimPatternEnd = Pattern.compile(String.format("(%s)*$", regexTrimPattern), getCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
+            this.trimPatternStart = Pattern.compile(String.format("^(%s)*", regexTrimPattern), (getCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE));
+            this.trimPatternEnd = Pattern.compile(String.format("(%s)*$", regexTrimPattern), (getCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE));
         }
         return this;
     }
 
-    protected String trim(String input) {
-        if (input == null) {
-            return "";
+    protected int trimStart(CharSequence input) {
+        Matcher matcher;
+        if (trimPatternStart == null || !(matcher = trimPatternStart.matcher(input)).find()) {
+            return 0;
         }
-
-        if (trimPatternStart != null) {
-            input = trimPatternStart.matcher(input).replaceFirst("");
-        }
-        if (trimPatternEnd != null) {
-            input = trimPatternEnd.matcher(input).replaceFirst("");
-        }
-
-        return input;
+        return matcher.end();
     }
 
-    protected <T> List<TokenInfo<T>> tokenize(String str, Collection<Token<T>> tokenCollection, BiFunction<T, String, Boolean> matcherCallback) throws ParseException {
+    protected int trimEnd(CharSequence input) {
+        Matcher matcher;
+        if (trimPatternEnd == null || !(matcher = trimPatternEnd.matcher(input)).find()) {
+            return input.length();
+        }
+        return matcher.start();
+    }
+
+    public <T> TokenInfo<T> findToken(
+            CharSequence text,
+            int start,
+            int end,
+            Collection<Token<T>> tokenCollection,
+            BiFunction<T, String, Boolean> matcherCallback
+    ) {
+        CharSequence currentText = text.subSequence(start, end);
+        for (Token<T> info : tokenCollection) {
+            Matcher matcher = info.regex.matcher(currentText);
+            if (matcher.find() &&
+                    (matcherCallback == null || matcherCallback.apply(info.token, matcher.group()))
+            ) {
+                return new TokenInfo(info.token, new CharRange(text, start, start + matcher.end()));
+            }
+        }
+        return null;
+    }
+
+    public <T> List<TokenInfo<T>> tokenize(String str, Collection<Token<T>> tokenCollection, BiFunction<T, String, Boolean> matcherCallback) throws ParseException {
         List<TokenInfo<T>> tokenInfos = new LinkedList<>();
-        String trimmedString = trim(str == null ? null : str.replaceAll("\r\n", "\n"));
-        while (!trimmedString.equals(""))
-        {
-            boolean match = false;
-            for (Token<T> info : tokenCollection)
-            {
-                Matcher matcher = info.regex.matcher(trimmedString);
-                if (matcher.find())
-                {
-                    String sequence = trim(matcher.group());
-                    if (matcherCallback == null || matcherCallback.apply(info.token, sequence)) {
-                        match = true;
-                        trimmedString = trim(matcher.replaceFirst(""));
-                        tokenInfos.add(new TokenInfo(info.token, sequence));
-                        break;
-                    }
-                }
+        CharSequence fullText = str == null ? "" : str.replaceAll("\r\n", "\n");
+        int start = trimStart(fullText);
+        int end = trimEnd(fullText);
+        while (start < end) {
+            TokenInfo<T> nextToken = findToken(fullText, start, end, tokenCollection, matcherCallback);
+            if (nextToken == null) {
+                break;
             }
-            if (!match) {
-                throw new ParseException("Unexpected character in input: " + trimmedString, 0);
-            }
+            CharRange textWithRange = nextToken.textRange();
+            start = textWithRange.end() + trimStart(fullText.subSequence(nextToken.textRange().end(), end));
+            tokenInfos.add(nextToken);
         }
         return tokenInfos;
     }
@@ -177,4 +260,3 @@ public class Tokenizer<T>
         return tokenize(str, tokenMap.values(), null);
     }
 }
-

@@ -61,33 +61,36 @@ public class TokenizerUT {
     @Test
     public void tokenize_should_return_correct_token() throws ParseException {
         Tokenizer<Integer> tokenizer = new Tokenizer();
+        tokenizer.setTrimPattern(" ");
 
         tokenizer.add(0, "abc");
 
-        assertThat(tokenizer.tokenize("abc "), contains(new Tokenizer.TokenInfo(0, "abc")));
+        assertThat(tokenizer.tokenize("abc "), contains(new Tokenizer.TokenInfo(0, new Tokenizer.CharRange("abc ", 0, 3))));
     }
 
     @Test
     public void tokenize_should_return_correct_tokens() throws ParseException {
         Tokenizer<Integer> tokenizer = new Tokenizer();
+        tokenizer.setTrimPattern(" ");
 
         tokenizer.add(0, "abc");
 
         assertThat(tokenizer.tokenize("abc      abc "), Matchers.contains(
-                new Tokenizer.TokenInfo(0, "abc"),
-                new Tokenizer.TokenInfo(0, "abc")));
+                new Tokenizer.TokenInfo(0, new Tokenizer.CharRange("abc      abc ", 0, 3)),
+                new Tokenizer.TokenInfo(0, new Tokenizer.CharRange("abc      abc ", 9, 12))));
     }
 
     @Test
     public void tokenize_should_return_correct_multiple_tokens() throws ParseException {
         Tokenizer<Integer> tokenizer = new Tokenizer();
+        tokenizer.setTrimPattern(" ");
 
         tokenizer.add(0, "abc");
         tokenizer.add(1, "def");
 
         assertThat(tokenizer.tokenize("def      abc "), Matchers.contains(
-                new Tokenizer.TokenInfo(1, "def"),
-                new Tokenizer.TokenInfo(0, "abc")));
+                new Tokenizer.TokenInfo(1, new Tokenizer.CharRange("def      abc ", 0, 3)),
+                new Tokenizer.TokenInfo(0, new Tokenizer.CharRange("def      abc ", 9, 12))));
     }
 
 }

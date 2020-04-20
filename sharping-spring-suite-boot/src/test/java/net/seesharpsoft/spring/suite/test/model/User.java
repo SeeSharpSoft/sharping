@@ -1,7 +1,5 @@
 package net.seesharpsoft.spring.suite.test.model;
 
-import jdk.nashorn.internal.objects.annotations.Setter;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 

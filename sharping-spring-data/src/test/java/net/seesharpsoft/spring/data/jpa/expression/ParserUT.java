@@ -15,57 +15,60 @@ public class ParserUT {
     @Test
     public void odata_tokenize_should_return_correct_token_list_very_simple() throws ParseException {
         Parser parser = new Parser(Dialects.ODATA);
-        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize("a eq 1");
+        String rootTokenText = "a eq 1";
+        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize(rootTokenText);
 
         assertThat(tokenInfos, contains(
-                new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "1")
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 0, 1)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 2, 4)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText,  5, 6))
         ));
     }
 
     @Test
     public void odata_tokenize_should_return_correct_token_list_simple() throws ParseException {
         Parser parser = new Parser(Dialects.ODATA);
-        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize("a eq 'eq lt ne' AND b lt 3");
+        String rootTokenText ="a eq 'eq lt ne' AND b lt 3";
+        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize(rootTokenText);
 
         assertThat(tokenInfos, contains(
-                new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "'eq lt ne'"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "AND"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "b"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "lt"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "3")
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 0, 1)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 2, 4)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 5, 15)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 16, 19)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 20, 21)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 22, 24)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 25, 26))
         ));
     }
 
     @Test
     public void odata_tokenize_should_return_correct_token_list_normal() throws ParseException {
         Parser parser = new Parser(Dialects.ODATA);
-        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize("a eq 'eq lt ne' AND (b lt 3 or c gt '123' or not (a/b in [test,test2]))");
+        String rootTokenText = "a eq 'eq lt ne' AND (b lt 3 or c gt '123' or not (a/b in [test,test2]))";
+        List<Tokenizer.TokenInfo<Token>> tokenInfos = parser.tokenize(rootTokenText);
 
         assertThat(tokenInfos, contains(
-                new Tokenizer.TokenInfo(Token.OPERAND, "a"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "eq"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "'eq lt ne'"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "AND"),
-                new Tokenizer.TokenInfo(Token.BRACKET_OPEN, "("),
-                new Tokenizer.TokenInfo(Token.OPERAND, "b"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "lt"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "3"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "or"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "c"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "gt"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "'123'"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "or"),
-                new Tokenizer.TokenInfo(Token.UNARY_OPERATOR, "not"),
-                new Tokenizer.TokenInfo(Token.BRACKET_OPEN, "("),
-                new Tokenizer.TokenInfo(Token.OPERAND, "a/b"),
-                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, "in"),
-                new Tokenizer.TokenInfo(Token.OPERAND, "[test,test2]"),
-                new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, ")"),
-                new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, ")")
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 0, 1)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 2, 4)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 5, 15)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 16, 19)),
+                new Tokenizer.TokenInfo(Token.BRACKET_OPEN, new Tokenizer.CharRange(rootTokenText, 20, 21)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 21, 22)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 23, 25)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 26, 27)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 28, 30)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText,  31, 32)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 33, 35)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 36, 41)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 42, 44)),
+                new Tokenizer.TokenInfo(Token.UNARY_OPERATOR, new Tokenizer.CharRange(rootTokenText,  45, 48)),
+                new Tokenizer.TokenInfo(Token.BRACKET_OPEN, new Tokenizer.CharRange(rootTokenText,49, 50)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 50, 53)),
+                new Tokenizer.TokenInfo(Token.BINARY_OPERATOR, new Tokenizer.CharRange(rootTokenText, 54, 56)),
+                new Tokenizer.TokenInfo(Token.OPERAND, new Tokenizer.CharRange(rootTokenText, 57, 69)),
+                new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, new Tokenizer.CharRange(rootTokenText, 69, 70)),
+                new Tokenizer.TokenInfo(Token.BRACKET_CLOSE, new Tokenizer.CharRange(rootTokenText, 70, 71))
         ));
     }
 

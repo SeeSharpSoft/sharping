@@ -69,6 +69,7 @@ public class Parser {
     private static Tokenizer<Token> createTokenizer(Dialect dialect) {
         Tokenizer<Token> tokenizer = new Tokenizer();
         tokenizer.setCaseSensitive(dialect.isCaseSensitive());
+        tokenizer.setTrimPattern("\n| ");
         for (Token token : Token.values()) {
             String pattern = dialect.getRegexPattern(token);
             if (pattern != null && !pattern.isEmpty()) {
@@ -110,7 +111,7 @@ public class Parser {
 
     public <T extends Operand> T parseExpression(String expression) throws ParseException {
         List<Tokenizer.TokenInfo<Token>> rpn = toRPN(tokenize(expression));
-        return (T)evaluateRPN(rpn);
+        return (T) evaluateRPN(rpn);
     }
 
     public Operand parseValue(String value) {
@@ -140,18 +141,18 @@ public class Parser {
     }
 
     private Operand getOperand(Tokenizer.TokenInfo<Token> tokenInfo) {
-        switch (tokenInfo.token) {
+        switch (tokenInfo.token()) {
             case OPERAND:
-                return parseValue(tokenInfo.sequence);
+                return parseValue(tokenInfo.text());
             case NULL:
                 return null;
             default:
-                throw new UnhandledSwitchCaseException(tokenInfo.token);
+                throw new UnhandledSwitchCaseException(tokenInfo.token());
         }
     }
 
     private static boolean isOperator(Tokenizer.TokenInfo<Token> tokenInfo) {
-        switch (tokenInfo.token) {
+        switch (tokenInfo.token()) {
             case UNARY_OPERATOR:
             case BINARY_OPERATOR:
             case UNARY_OPERATOR_METHOD:
@@ -164,7 +165,7 @@ public class Parser {
     }
 
     private static boolean isMethod(Tokenizer.TokenInfo<Token> tokenInfo) {
-        switch (tokenInfo.token) {
+        switch (tokenInfo.token()) {
             case UNARY_OPERATOR_METHOD:
             case BINARY_OPERATOR_METHOD:
             case TERTIARY_OPERATOR_METHOD:
@@ -176,7 +177,7 @@ public class Parser {
 
     private Operator getOperator(Tokenizer.TokenInfo<Token> tokenInfo) {
         Assert.isTrue(isOperator(tokenInfo), "operator tokenInfo required!");
-        return dialect.getOperator(tokenInfo.sequence);
+        return dialect.getOperator(tokenInfo.text());
     }
 
     private List<Tokenizer.TokenInfo<Token>> toRPN(List<Tokenizer.TokenInfo<Token>> inputTokenInfos) throws ParseException {
@@ -184,9 +185,9 @@ public class Parser {
         List<Tokenizer.TokenInfo<Token>> out = new LinkedList();
         Deque<Tokenizer.TokenInfo> stack = new LinkedList();
 
-        while(!in.isEmpty()) {
+        while (!in.isEmpty()) {
             Tokenizer.TokenInfo<Token> tokenInfo = in.poll();
-            switch (tokenInfo.token) {
+            switch (tokenInfo.token()) {
                 case UNARY_OPERATOR:
                 case BINARY_OPERATOR:
                     Operator operator = getOperator(tokenInfo);
@@ -203,7 +204,7 @@ public class Parser {
                     stack.push(tokenInfo);
                     break;
                 case BRACKET_CLOSE:
-                    while (!stack.isEmpty() && stack.peek().token != BRACKET_OPEN) {
+                    while (!stack.isEmpty() && stack.peek().token() != BRACKET_OPEN) {
                         out.add(stack.pop());
                     }
                     stack.pop();
@@ -211,7 +212,7 @@ public class Parser {
                 case UNARY_OPERATOR_METHOD:
                 case BINARY_OPERATOR_METHOD:
                 case TERTIARY_OPERATOR_METHOD:
-                    Assert.isTrue(in.peek().token == BRACKET_OPEN, "opening bracket after method name expected!");
+                    Assert.isTrue(in.peek().token() == BRACKET_OPEN, "opening bracket after method name expected!");
                     stack.push(in.poll());
                     stack.push(tokenInfo);
                     break;
@@ -225,7 +226,7 @@ public class Parser {
                     out.add(tokenInfo);
                     break;
                 default:
-                    throw new UnhandledSwitchCaseException(tokenInfo.token);
+                    throw new UnhandledSwitchCaseException(tokenInfo.token());
             }
         }
         while (!stack.isEmpty()) {
@@ -243,7 +244,7 @@ public class Parser {
                 Operator operator = getOperator(tokenInfo);
                 Operation operation = null;
                 Operand right = operands.pop();
-                switch(operator.getNAry()) {
+                switch (operator.getNAry()) {
                     case UNARY:
                         operation = new Operations.Unary(operator, right);
                         break;

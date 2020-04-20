@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Lexer<T> {
 
@@ -16,28 +17,21 @@ public class Lexer<T> {
      */
     public static class State<T> {
         private final String name;
-        private Map<State, Set<T>> nextStates;
+        private Map<T, State> nextStates;
 
         private State(String name) {
             this.name = name;
             nextStates = new HashMap<>();
         }
 
-        protected boolean hasDuplicateTokens(List<T> tokens) {
-            return nextStates.values().stream()
-                    .anyMatch(existingTokens -> tokens.stream().anyMatch(token -> existingTokens.contains(token)));
-        }
-
         public void addNextState(State state, List<T> tokens) {
             Objects.requireNonNull(state, "state must not be null!");
-            if (hasDuplicateTokens(tokens)) {
-                throw new IllegalArgumentException(String.format("duplicate tokenInfos: %s - %s", tokens, nextStates.values()));
-            }
-            if (nextStates.containsKey(state)) {
-                nextStates.get(state).addAll(tokens);
-            } else {
-                nextStates.put(state, new HashSet<>(tokens));
-            }
+            tokens.forEach(token -> {
+                if (nextStates.containsKey(token)) {
+                    throw new IllegalArgumentException(String.format("duplicate tokenInfos in state '%s' for next state '%s': '%s' in '%s'", this, state, token, nextStates.values()));
+                }
+                nextStates.put(token, state);
+            });
         }
 
         public void addNextState(State state, T... tokens) {
@@ -45,12 +39,7 @@ public class Lexer<T> {
         }
 
         protected State getNextState(T token) {
-            for (Map.Entry<State, Set<T>> entry : nextStates.entrySet()) {
-                if (entry.getValue().contains(token)) {
-                    return entry.getKey();
-                }
-            }
-            return null;
+            return nextStates.get(token);
         }
 
         public String getName() {
@@ -118,10 +107,10 @@ public class Lexer<T> {
         }
     }
 
-    private final Tokenizer<T> tokenizer;
-    private Set<State> states;
-    private State initialState;
-    private State currentState;
+    protected final Tokenizer<T> tokenizer;
+    protected Set<State> states;
+    protected State initialState;
+    protected State currentState;
 
     public Lexer(Tokenizer<T> tokenizer) {
         this.states = new HashSet<>();
@@ -163,7 +152,7 @@ public class Lexer<T> {
         return initialState;
     }
 
-    protected boolean tokenMatcherCallback(T token, String sequence) {
+    protected boolean tokenMatcherCallback(T token, String text) {
         State nextState = currentState.getNextState(token);
         if (nextState != null) {
             currentState = nextState;
@@ -171,10 +160,31 @@ public class Lexer<T> {
         return nextState != null;
     }
 
-    public synchronized List<Tokenizer.TokenInfo<T>> tokenize(String input) throws ParseException {
+    public synchronized List<Tokenizer.TokenInfo<T>> tokenize(String input) {
         currentState = getInitialState();
 
-        return tokenizer.tokenize(input, this::tokenMatcherCallback);
+        final Map<State, Collection<Tokenizer.Token<T>>> stateToTokenMap = new HashMap();
+        states.stream().forEach(state -> {
+            stateToTokenMap.put(state, (Collection)state.nextStates.keySet().stream()
+                    .map(tokenKey -> tokenizer.getToken((T)tokenKey))
+                    .filter(token -> token != null)
+                    .collect(Collectors.toList()));
+        });
+        List<Tokenizer.TokenInfo<T>> tokenInfos = new ArrayList<>(input.length() / 5);
+        CharSequence fullText = input == null ? "" : input.replaceAll("\r\n", "\n");
+        int start = tokenizer.trimStart(fullText);
+        int end = tokenizer.trimEnd(fullText);
+        while (start < end)
+        {
+            Tokenizer.TokenInfo<T> nextToken = tokenizer.findToken(fullText, start, end, stateToTokenMap.get(currentState), this::tokenMatcherCallback);
+            if (nextToken == null) {
+                break;
+            }
+            Tokenizer.CharRange textWithRange = nextToken.textRange();
+            start = textWithRange.end() + tokenizer.trimStart(fullText.subSequence(nextToken.textRange().end(), end));
+            tokenInfos.add(nextToken);
+        }
+        return tokenInfos;
     }
 
     public List<StateInfo<T>> parseStates(List<Tokenizer.TokenInfo<T>> tokenInfos) {
@@ -207,6 +217,7 @@ public class Lexer<T> {
         lexerStates = SharpIO.readAsString(is);
 
         Tokenizer<Integer> stateTokenizer = new Tokenizer();
+        stateTokenizer.setTrimPattern("(\n| )");
         stateTokenizer.add(0, "[a-z\\_]+:");
         stateTokenizer.add(1, "[0-9A-Z\\_]+");
         stateTokenizer.add(2, "\\|");
@@ -228,7 +239,7 @@ public class Lexer<T> {
         for (Tokenizer.TokenInfo<Integer> tokenInfo : tokenInfos) {
             switch (tokenInfo.token) {
                 case 0:
-                    name = tokenInfo.sequence.substring(0, tokenInfo.sequence.length() - 1);
+                    name = tokenInfo.text().substring(0, tokenInfo.text().length() - 1);
                     lastState = getState(name);
                     if (lastState == null) {
                         lastState = addState(name);
@@ -236,11 +247,11 @@ public class Lexer<T> {
                     currentTokens = new ArrayList<>();
                     break;
                 case 1:
-                    currentToken = tokenResolver.apply(tokenInfo.sequence);
+                    currentToken = tokenResolver.apply(tokenInfo.text());
                     break;
                 case 3:
                     currentTokens.add(currentToken);
-                    name = tokenInfo.sequence.substring(1);
+                    name = tokenInfo.text().substring(1);
                     Lexer.State nextState = getState(name);
                     if (nextState == null) {
                         nextState = addState(name);
@@ -254,7 +265,7 @@ public class Lexer<T> {
                 case 4:
                     break;
                 case 5:
-                    this.tokenizer.add(currentToken, tokenInfo.sequence.substring(1).replaceFirst("\n$", ""));
+                    this.tokenizer.add(currentToken, tokenInfo.text().substring(1).replaceFirst("\n$", ""));
                     break;
                 default:
                     throw new UnhandledSwitchCaseException(tokenInfo.token);

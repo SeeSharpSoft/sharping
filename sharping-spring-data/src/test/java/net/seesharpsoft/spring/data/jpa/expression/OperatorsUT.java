@@ -1,18 +1,16 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
+import net.seesharpsoft.commons.collection.Pair;
 import net.seesharpsoft.spring.test.mock.CriteriaBuilderMockBuilder;
 import net.seesharpsoft.spring.test.mock.CriteriaQueryMockBuilder;
 import net.seesharpsoft.spring.test.mock.ExpressionMockBuilder;
 import org.junit.Test;
-import javafx.util.Pair;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -100,13 +98,13 @@ public class OperatorsUT {
     @Test
     public void numerical_operators_should_evaluate_correctly() {
         List<Pair> inputs = new ArrayList<>();
-        inputs.add(new Pair(2, 2));
-        inputs.add(new Pair(2.0, 3));
-        inputs.add(new Pair(null, 3));
-        inputs.add(new Pair(null, null));
-        inputs.add(new Pair(-1f, 10));
-        inputs.add(new Pair(4, 0d));
-        inputs.add(new Pair(4, -2f));
+        inputs.add(Pair.of(2, 2));
+        inputs.add(Pair.of(2.0, 3));
+        inputs.add(Pair.of(null, 3));
+        inputs.add(Pair.of(null, null));
+        inputs.add(Pair.of(-1f, 10));
+        inputs.add(Pair.of(4, 0d));
+        inputs.add(Pair.of(4, -2f));
 
         Map<Operator, List> operatorResultMap = new HashMap<>();
         operatorResultMap.put(Operators.ADD, Arrays.asList(4, 5.0, 3, 0, 9f, 4, 2));
@@ -122,13 +120,13 @@ public class OperatorsUT {
                         if (result == null) {
                             boolean failed = false;
                             try {
-                                key.evaluate(pair.getKey(), pair.getValue());
+                                key.evaluate(pair.getFirst(), pair.getSecond());
                             } catch(ArithmeticException exc) {
                                 failed = true;
                             }
-                            assertThat(String.format("%s(%s, %s) should fail", key, pair.getKey(), pair.getValue()), failed, is(true));
+                            assertThat(String.format("%s(%s, %s) should fail", key, pair.getFirst(), pair.getSecond()), failed, is(true));
                         } else {
-                            assertThat(String.format("%s(%s, %s) = %s", key, pair.getKey(), pair.getValue(), result), key.evaluate(pair.getKey(), pair.getValue()), is(result));
+                            assertThat(String.format("%s(%s, %s) = %s", key, pair.getFirst(), pair.getSecond(), result), key.evaluate(pair.getFirst(), pair.getSecond()), is(result));
                         }
                     }
                 });
