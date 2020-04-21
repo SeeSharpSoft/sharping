@@ -88,7 +88,7 @@ public class Tokenizer<T> {
         }
 
         public int length() {
-            return text.length();
+            return this.end - this.start;
         }
 
         public int start() {
@@ -185,7 +185,7 @@ public class Tokenizer<T> {
         return tokenMap.values();
     }
 
-    protected Token<T> getToken(T token) {
+    public Token<T> getToken(T token) {
         return tokenMap.get(token);
     }
 
