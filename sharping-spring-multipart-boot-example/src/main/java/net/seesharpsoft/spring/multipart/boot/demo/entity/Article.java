@@ -1,8 +1,9 @@
 package net.seesharpsoft.spring.multipart.boot.demo.entity;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +22,6 @@ public class Article {
     @ManyToOne
     private Person author;
 
-    @Type(type = "net.seesharpsoft.spring.multipart.boot.demo.util.ElementCollectionType")
+//    @Type(type = "net.seesharpsoft.spring.multipart.boot.demo.util.ElementCollectionType")
     private List<String> languages;
 }

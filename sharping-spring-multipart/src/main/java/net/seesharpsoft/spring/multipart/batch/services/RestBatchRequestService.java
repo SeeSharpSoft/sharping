@@ -7,13 +7,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 
 public class RestBatchRequestService extends BatchRequestServiceBase {
+
+    public RestBatchRequestService(BatchRequestProperties batchRequestProperties) {
+        super(batchRequestProperties);
+    }
 
     @Override
     protected BatchResponse.Entity processSingleRequest(

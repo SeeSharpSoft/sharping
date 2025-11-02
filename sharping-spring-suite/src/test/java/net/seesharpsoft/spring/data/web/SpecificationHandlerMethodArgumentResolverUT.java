@@ -3,7 +3,7 @@ package net.seesharpsoft.spring.data.web;
 import net.seesharpsoft.spring.data.jpa.StringToStringSpecificationDummyConverter;
 
 import net.seesharpsoft.spring.test.controller.SimpleControllerDummy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.matchers.StartsWith;
 
 import org.springframework.test.web.servlet.MockMvc;

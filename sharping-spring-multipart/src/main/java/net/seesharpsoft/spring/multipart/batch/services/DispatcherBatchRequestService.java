@@ -8,19 +8,23 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.URI;
+
 
 public class DispatcherBatchRequestService extends BatchRequestServiceBase {
 
     protected DispatcherServlet servlet;
 
-    public DispatcherBatchRequestService(DispatcherServlet dispatcherServlet) {
+    public DispatcherBatchRequestService(
+            BatchRequestProperties batchRequestProperties,
+            DispatcherServlet dispatcherServlet
+    ) {
+        super(batchRequestProperties);
         this.servlet = dispatcherServlet;
     }
 
@@ -46,7 +50,7 @@ public class DispatcherBatchRequestService extends BatchRequestServiceBase {
         return responseEntry;
     }
 
-    protected void dispatchRequest(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+    protected void dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         servlet.service(request, response);
     }
 }

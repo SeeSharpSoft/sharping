@@ -4,17 +4,18 @@ import net.seesharpsoft.commons.collection.Pair;
 import net.seesharpsoft.spring.test.mock.CriteriaBuilderMockBuilder;
 import net.seesharpsoft.spring.test.mock.CriteriaQueryMockBuilder;
 import net.seesharpsoft.spring.test.mock.ExpressionMockBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OperatorsUT {
 
@@ -38,13 +39,15 @@ public class OperatorsUT {
         assertThat(expression.toString(), is("or(null, null)"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void binary_operator_asExpression_should_fail_without_values() {
-        CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
-        CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
-        Root root = ExpressionMockBuilder.newRoot(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
+            CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
+            Root root = ExpressionMockBuilder.newRoot(null);
 
-        Operators.OR.createExpression(root, query, builder);
+            Operators.OR.createExpression(root, query, builder);
+        });
     }
 
     @Test
@@ -67,13 +70,15 @@ public class OperatorsUT {
         assertThat(expression.toString(), is("and()"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void equals_operator_asExpression_should_fail_without_values() {
-        CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
-        CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
-        Root root = ExpressionMockBuilder.newRoot(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
+            CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
+            Root root = ExpressionMockBuilder.newRoot(null);
 
-        Operators.EQUALS.createExpression(root, query, builder);
+            Operators.EQUALS.createExpression(root, query, builder);
+        });
     }
 
     @Test
@@ -86,13 +91,15 @@ public class OperatorsUT {
         assertThat(expression.toString(), is("not(null)"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void unary_operator_asExpression_should_handle_no_values() {
-        CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
-        CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
-        Root root = ExpressionMockBuilder.newRoot(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            CriteriaBuilder builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
+            CriteriaQuery query = CriteriaQueryMockBuilder.newCriteriaQuery();
+            Root root = ExpressionMockBuilder.newRoot(null);
 
-        Operators.NOT.createExpression(root, query, builder);
+            Operators.NOT.createExpression(root, query, builder);
+        });
     }
 
     @Test

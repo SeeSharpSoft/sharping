@@ -1,17 +1,19 @@
 package net.seesharpsoft.spring.data.domain;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OffsetLimitRequestUT {
     
     @Test
     public void constructor_should_create_correct_instance() {
-        Sort sort = new Sort(Sort.Direction.DESC,"test");
+        Sort sort = Sort.by(Sort.Direction.DESC,"test");
         
         OffsetLimitRequest offsetLimitRequest = new OffsetLimitRequest(545, 12, sort);
         
@@ -20,19 +22,25 @@ public class OffsetLimitRequestUT {
         MatcherAssert.assertThat(offsetLimitRequest.getSort(), equalTo(sort));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructor_should_not_accept_incorrect_offset() {
-        new OffsetLimitRequest(-12, 12);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new OffsetLimitRequest(-12, 12);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructor_should_not_accept_incorrect_limit_0() {
-        new OffsetLimitRequest(0, -12);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new OffsetLimitRequest(0, -12);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructor_should_not_accept_incorrect_limit_1() {
-        new OffsetLimitRequest(0, 0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new OffsetLimitRequest(0, 0);
+        });
     }
 
     @Test

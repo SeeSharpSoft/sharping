@@ -5,14 +5,14 @@ import net.seesharpsoft.spring.data.jpa.expression.Parser;
 import net.seesharpsoft.spring.test.mock.CriteriaBuilderMockBuilder;
 import net.seesharpsoft.spring.test.mock.CriteriaQueryMockBuilder;
 import net.seesharpsoft.spring.test.mock.ExpressionMockBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.text.ParseException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,7 +26,7 @@ public class OperationSpecificationUT {
 
     private Root root;
 
-    @Before
+    @BeforeEach
     public void before() {
         builder = CriteriaBuilderMockBuilder.newCriteriaBuilder();
         query = CriteriaQueryMockBuilder.newCriteriaQuery();

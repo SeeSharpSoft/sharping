@@ -2,15 +2,17 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import net.seesharpsoft.spring.data.jpa.CriteriaQueryWrapper;
 import net.seesharpsoft.spring.data.jpa.ExpressionHolder;
+import net.seesharpsoft.spring.data.jpa.JpaVendorUtilProxy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.TupleElement;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Attribute;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -26,14 +28,14 @@ public class Operands {
      * @param value the value to get an operand for
      * @return an Operand implementation or null if value is null
      */
-    public static final Operand from(Object value) {
+    public static Operand from(Object value) {
         if (value == null || value instanceof Operand) {
             return (Operand) value;
         }
         return new Wrapper(value);
     }
 
-    public static final Operand asReference(String path) {
+    public static Operand asReference(String path) {
         return new FieldReference(path);
     }
 
@@ -45,7 +47,7 @@ public class Operands {
      * @param joinType join type
      * @return existing join or {@code null} if not existent
      */
-    public static final Join findJoin(From<?, ?> from, String name, JoinType joinType) {
+    public static Join findJoin(From<?, ?> from, String name, JoinType joinType) {
         Assert.notNull(from, "from must not be null");
         for (Join join : from.getJoins()) {
             if ((name.equalsIgnoreCase(join.getAlias()) || (join.getAlias() == null && name.equalsIgnoreCase(join.getAttribute().getName()))) &&
@@ -64,7 +66,7 @@ public class Operands {
      * @param joinType join type
      * @return a join to given field
      */
-    public static final Join getJoin(From<?, ?> from, String field, JoinType joinType) {
+    public static Join getJoin(From<?, ?> from, String field, JoinType joinType) {
         Join join = findJoin(from, field, joinType);
         return join == null ? createJoin(from, field, joinType) : join;
     }
@@ -76,7 +78,7 @@ public class Operands {
      * @param field target field
      * @return a join to given field
      */
-    public static final Join getJoin(From<?, ?> from, String field) {
+    public static Join getJoin(From<?, ?> from, String field) {
         return getJoin(from, field, JoinType.LEFT);
     }
 
@@ -87,7 +89,7 @@ public class Operands {
      * @param field target field
      * @return a join to given field
      */
-    public static final Join createJoin(From<?, ?> from, String field, JoinType joinType) {
+    public static Join createJoin(From<?, ?> from, String field, JoinType joinType) {
         return from.join(field, joinType);
     }
 
@@ -98,7 +100,7 @@ public class Operands {
      * @param elements    available elements
      * @return the found element as expression or null
      */
-    public static final Expression findExpression(String nameOrAlias, List<TupleElement> elements) {
+    public static Expression findExpression(String nameOrAlias, List<TupleElement> elements) {
         Assert.notNull(elements, "elements must not be null!");
         return elements.stream()
                 .filter(element ->
@@ -117,7 +119,7 @@ public class Operands {
      * @param query             the query
      * @return an expression
      */
-    public static final Expression getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
+    public static Expression getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
         return getPath(from, nameOrAliasOrPath, getContexts(query));
     }
 
@@ -127,7 +129,7 @@ public class Operands {
      * @param fullPath the full path like "user/name"
      * @return the parts as array, e.g. ["user", "name"]
      */
-    public static final String[] getPathParts(String fullPath) {
+    public static String[] getPathParts(String fullPath) {
         return fullPath.split("[/.\\\\]");
     }
 
@@ -206,25 +208,36 @@ public class Operands {
         return joins;
     }
 
-    public static final List<Selection> getAllSelections(Selection<?> selection) {
+    public static List<Selection<?>> getAllSelections(Selection<?> selection, @Nullable JpaVendorUtilProxy jpaVendorUtilProxy) {
+        if (jpaVendorUtilProxy == null) {
+            return getAllSelections(selection);
+        }
+        return jpaVendorUtilProxy.getAllSelections(selection);
+    }
+
+    public static List<Selection<?>> getAllSelections(Selection<?> selection) {
         if (selection == null) {
             return Collections.emptyList();
         }
         if (selection.isCompoundSelection()) {
-            List<Selection> result = new ArrayList<>();
+            List<Selection<?>> result = new ArrayList<>();
             selection.getCompoundSelectionItems().forEach(compoundSelection -> result.addAll(getAllSelections(compoundSelection)));
             return result;
         }
         return Collections.singletonList(selection);
     }
 
-    public static List<TupleElement> getContexts(AbstractQuery query) {
+    public static List<TupleElement> getContexts(AbstractQuery query, @Nullable JpaVendorUtilProxy jpaVendorUtilProxy) {
         List<TupleElement> elements = new ArrayList<>();
         Set<Root<?>> roots = getAllRoots(query);
         elements.addAll(roots);
         roots.forEach(root -> elements.addAll(getAllJoins(root)));
-        elements.addAll(getAllSelections(query.getSelection()));
+        elements.addAll(getAllSelections(query.getSelection(), jpaVendorUtilProxy));
         return elements;
+    }
+
+    public static List<TupleElement> getContexts(AbstractQuery query) {
+        return getContexts(query, null);
     }
 
     public static class FieldReference extends Wrapper {

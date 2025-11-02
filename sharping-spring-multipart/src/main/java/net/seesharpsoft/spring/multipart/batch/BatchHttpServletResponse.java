@@ -4,10 +4,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,6 +33,8 @@ public class BatchHttpServletResponse implements HttpServletResponse {
 
     private Locale locale;
 
+    private boolean isCommited;
+
     private void initAdditionalRequestInformation(HttpServletResponse response) {
         // copy headers
         this.headers = new HttpHeaders();
@@ -52,7 +54,8 @@ public class BatchHttpServletResponse implements HttpServletResponse {
      */
     public BatchHttpServletResponse(HttpServletResponse response) {
         initAdditionalRequestInformation(response);
-        this.status = SC_OK;
+        isCommited = false;
+        status = SC_OK;
     }
 
     public void addCookie(Cookie cookie) {
@@ -65,13 +68,8 @@ public class BatchHttpServletResponse implements HttpServletResponse {
     }
 
     @Override
-    public void setStatus(int sc, String sm) {
-        throw new UnsupportedOperationException("deprecated");
-    }
-
-    @Override
     public int getStatus() {
-        return this.status;
+        return this.status == 0 ? SC_OK : this.status;
     }
 
     /************ Headers ************/
@@ -143,19 +141,10 @@ public class BatchHttpServletResponse implements HttpServletResponse {
     }
 
     @Override
-    public String encodeUrl(String url) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String encodeRedirectUrl(String url) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void sendError(int sc, String msg) throws IOException {
         this.status = sc;
-        throw new HttpServerErrorException(HttpStatus.valueOf(this.status), msg);
+        this.isCommited = true;
+        this.getWriter().println(msg);
     }
 
     @Override
@@ -218,14 +207,18 @@ public class BatchHttpServletResponse implements HttpServletResponse {
 
     @Override
     public void resetBuffer() {
-        this.writer.close();
-        this.writer = null;
-        try {
-            this.outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (this.writer != null) {
+            this.writer.close();
+            this.writer = null;
         }
-        this.outputStream = null;
+        if (this.outputStream != null) {
+            try {
+                this.outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.outputStream = null;
+        }
     }
 
     @Override
@@ -237,21 +230,22 @@ public class BatchHttpServletResponse implements HttpServletResponse {
         return 0;
     }
 
-
     @Override
     public void flushBuffer() throws IOException {
         this.getOutputStream().flush();
+        this.isCommited = true;
     }
 
     @Override
     public boolean isCommitted() {
-        return status != 0;
+        return this.isCommited;
     }
 
     @Override
     public void reset() {
         this.headers.clear();
         this.resetBuffer();
+        this.isCommited = false;
     }
 
     @Override

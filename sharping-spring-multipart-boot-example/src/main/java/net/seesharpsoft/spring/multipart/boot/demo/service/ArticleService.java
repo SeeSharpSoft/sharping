@@ -6,7 +6,7 @@ import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 
 @Service
@@ -23,7 +23,6 @@ public class ArticleService {
     }
 
     public List<Article> getArticles() {
-        List<Article> articles = repository.findAll();
-        return articles;
+        return repository.findAll();
     }
 }

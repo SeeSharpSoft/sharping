@@ -1,6 +1,6 @@
 package net.seesharpsoft.spring.multipart.boot.demo.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity

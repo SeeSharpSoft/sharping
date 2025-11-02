@@ -2,7 +2,7 @@ package net.seesharpsoft.spring.data.web;
 
 import net.seesharpsoft.spring.data.domain.OffsetLimitRequest;
 import net.seesharpsoft.spring.test.controller.SimpleControllerDummy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.matchers.StartsWith;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

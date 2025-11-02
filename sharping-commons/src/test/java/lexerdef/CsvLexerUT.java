@@ -3,8 +3,9 @@ package lexerdef;
 import net.seesharpsoft.commons.util.Lexer;
 import net.seesharpsoft.commons.util.SharpIO;
 import net.seesharpsoft.commons.util.Tokenizer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -17,7 +18,7 @@ public class CsvLexerUT {
 
     private Lexer csvLexer;
 
-    @Before
+    @BeforeEach
     public void beforeEach() throws IOException {
         csvLexer = new Lexer<>(new Tokenizer<>());
 

@@ -2,7 +2,7 @@ package net.seesharpsoft.spring.test.mock;
 
 import org.mockito.invocation.InvocationOnMock;
 
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 
 import java.util.Arrays;
 

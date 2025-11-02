@@ -2,9 +2,9 @@ package net.seesharpsoft.spring.test.mock;
 
 import org.mockito.invocation.InvocationOnMock;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
 
 import static org.mockito.Mockito.mock;
 

@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import java.util.Set;
 
 @Entity
@@ -29,5 +29,5 @@ public class Team {
     private String name;
 
     @ManyToMany(mappedBy = "teams", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<User> users;
+    private Set<Person> people;
 }

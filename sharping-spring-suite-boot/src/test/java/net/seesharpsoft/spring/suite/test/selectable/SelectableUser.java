@@ -2,10 +2,10 @@ package net.seesharpsoft.spring.suite.test.selectable;
 
 import net.seesharpsoft.spring.data.jpa.selectable.Select;
 import net.seesharpsoft.spring.data.jpa.selectable.Selectable;
-import net.seesharpsoft.spring.suite.test.model.User;
+import net.seesharpsoft.spring.suite.test.model.Person;
 
 @Selectable(
-        from = User.class
+        from = Person.class
 )
 public class SelectableUser {
 

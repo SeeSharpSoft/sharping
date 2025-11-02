@@ -1,0 +1,2 @@
+net.seesharpsoft.spring.multipart.boot.MultipartConfiguration
+net.seesharpsoft.spring.multipart.boot.controller.BatchRequestController

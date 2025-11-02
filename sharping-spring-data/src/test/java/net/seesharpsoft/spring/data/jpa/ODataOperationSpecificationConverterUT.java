@@ -3,8 +3,9 @@ package net.seesharpsoft.spring.data.jpa;
 import net.seesharpsoft.spring.data.jpa.expression.Dialects;
 import net.seesharpsoft.spring.data.jpa.expression.Operands;
 import net.seesharpsoft.spring.data.jpa.expression.Operations;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -16,7 +17,7 @@ public class ODataOperationSpecificationConverterUT {
 
     private SpecificationConverter converter;
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
         converter = new SpecificationConverter(Dialects.ODATA, DefaultConversionService.getSharedInstance());
     }

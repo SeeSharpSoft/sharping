@@ -56,14 +56,16 @@ public class MultipartConfiguration extends WebMvcConfigurationSupport implement
     @Conditional(AutostartEnabledCondition.class)
     BatchRequestService batchRequestService(
             @Autowired(required = false) DispatcherServlet dispatcherServlet,
-            @Autowired(required = false) @Qualifier("securityFilterChainRegistration") DelegatingFilterProxyRegistrationBean filterProxyRegistrationBean) {
+            @Qualifier("securityFilterChainRegistration") @Autowired(required = false) DelegatingFilterProxyRegistrationBean filterProxyRegistrationBean,
+            @Autowired BatchRequestProperties batchRequestProperties
+    ) {
         switch (properties.getMode()) {
             case None:
                 return null;
             case LocalDispatch:
-                return new BootDispatcherBatchRequestService(dispatcherServlet, filterProxyRegistrationBean);
+                return new BootDispatcherBatchRequestService(batchRequestProperties, dispatcherServlet, filterProxyRegistrationBean);
             case HttpRequest:
-                return new RestBatchRequestService();
+                return new RestBatchRequestService(batchRequestProperties);
             default:
                 throw new RuntimeException(String.format("mode '%s' not handled", properties.getMode()));
         }

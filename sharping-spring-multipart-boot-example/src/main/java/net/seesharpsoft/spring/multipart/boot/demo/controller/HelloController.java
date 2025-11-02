@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
 
     @RequestMapping(value = "/hello", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String index() {
+    public String index() throws InterruptedException {
+        Thread.sleep(3000);
         return "Greetings from Spring Boot!";
     }
 

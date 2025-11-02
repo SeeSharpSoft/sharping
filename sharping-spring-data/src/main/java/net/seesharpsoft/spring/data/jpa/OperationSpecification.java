@@ -4,7 +4,7 @@ import net.seesharpsoft.spring.data.jpa.expression.Operation;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 import java.util.Objects;
 
 public class OperationSpecification<T> implements Specification<T> {

@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.data.jpa.expression;
 
-import javax.persistence.TupleElement;
-import javax.persistence.criteria.*;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.criteria.*;
 import java.util.List;
 
 public interface Operand {

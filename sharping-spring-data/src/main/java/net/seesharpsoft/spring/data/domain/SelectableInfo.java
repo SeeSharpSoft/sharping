@@ -1,13 +1,12 @@
 package net.seesharpsoft.spring.data.domain;
 
-import lombok.Getter;
+import jakarta.persistence.Transient;
+import jakarta.persistence.criteria.JoinType;
 import net.seesharpsoft.spring.data.jpa.expression.Operand;
 import net.seesharpsoft.spring.data.jpa.expression.Operation;
 import net.seesharpsoft.spring.data.jpa.selectable.*;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.Transient;
-import javax.persistence.criteria.JoinType;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,13 +16,10 @@ public class SelectableInfo<T> {
 
     public class FieldInfo {
 
-        @Getter
         protected final Field field;
 
-        @Getter
         protected final Operand selection;
 
-        @Getter
         protected final String alias;
 
         public FieldInfo(SqlParser parser, Field field, Alias alias) {
@@ -38,19 +34,23 @@ public class SelectableInfo<T> {
         public Operand getSelection() {
             return this.selection;
         }
+
+        public Field getField() {
+            return field;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
     }
 
     public class JoinInfo {
-        @Getter
         protected final String joinPath;
 
-        @Getter
         protected final JoinType joinType;
 
-        @Getter
         protected final String alias;
 
-        @Getter
         protected final Operation on;
 
         public JoinInfo(SqlParser parser, Join joinDefinition) {
@@ -59,24 +59,34 @@ public class SelectableInfo<T> {
             this.alias = joinDefinition.alias().isEmpty() ? joinDefinition.value() : joinDefinition.alias();
             this.on = joinDefinition.on().isEmpty() ? null : parser.parseExpression(joinDefinition.on());
         }
+
+        public String getJoinPath() {
+            return joinPath;
+        }
+
+        public JoinType getJoinType() {
+            return joinType;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+
+        public Operation getOn() {
+            return on;
+        }
     }
 
-    @Getter
     protected final Class<T> selectableClass;
 
-    @Getter
     protected final Class rootClass;
 
-    @Getter
     protected final List<FieldInfo> fields;
 
-    @Getter
     protected final List<JoinInfo> joins;
 
-    @Getter
     protected final Operation where;
 
-    @Getter
     protected final Operation having;
 
     public SelectableInfo(SqlParser parser, Class<T> selectableClass) {
@@ -121,5 +131,29 @@ public class SelectableInfo<T> {
             joinInfos.add(new JoinInfo(parser, joinDefinition));
         }
         return joinInfos;
+    }
+
+    public Class<T> getSelectableClass() {
+        return selectableClass;
+    }
+
+    public Class getRootClass() {
+        return rootClass;
+    }
+
+    public List<FieldInfo> getFields() {
+        return fields;
+    }
+
+    public List<JoinInfo> getJoins() {
+        return joins;
+    }
+
+    public Operation getWhere() {
+        return where;
+    }
+
+    public Operation getHaving() {
+        return having;
     }
 }

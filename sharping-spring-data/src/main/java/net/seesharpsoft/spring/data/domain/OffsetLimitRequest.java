@@ -21,7 +21,7 @@ public class OffsetLimitRequest implements Pageable {
     public OffsetLimitRequest(long offset, int limit) {
         this(offset, limit, Sort.unsorted());
     }
-    
+
     @Override
     public int getPageNumber() {
         return (int) Math.floorDiv(getOffset() + getPageSize() - 1, getPageSize());
@@ -63,10 +63,15 @@ public class OffsetLimitRequest implements Pageable {
     }
 
     @Override
+    public Pageable withPage(int pageNumber) {
+        return  new OffsetLimitRequest((long) pageNumber * getPageSize(), getPageSize(), getSort());
+    }
+
+    @Override
     public boolean hasPrevious() {
         return getOffset() > 0;
     }
-    
+
     @Override
     public String toString() {
         return String.format("Offset-Limit request [offset: %d, limit: %d, sort: %s]", getOffset(), getPageSize(), getSort());

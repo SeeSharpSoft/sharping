@@ -1,6 +1,9 @@
 sharping.multipart:
   mode: LocalDispatch
   endpoint: /my/own/multipart/endpoint
+  properties:
+    threadPoolSize: 5
+    parallelProcessing: true
 
 spring.jpa.properties:
   hibernate.persister.resolver: net.seesharpsoft.spring.multipart.boot.demo.util.CustomPersisterClassResolver

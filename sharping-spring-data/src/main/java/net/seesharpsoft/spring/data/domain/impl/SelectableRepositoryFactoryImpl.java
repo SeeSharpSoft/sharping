@@ -6,7 +6,7 @@ import net.seesharpsoft.spring.data.domain.SqlParser;
 import net.seesharpsoft.spring.data.jpa.JpaVendorUtilProxy;
 import org.springframework.util.Assert;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;

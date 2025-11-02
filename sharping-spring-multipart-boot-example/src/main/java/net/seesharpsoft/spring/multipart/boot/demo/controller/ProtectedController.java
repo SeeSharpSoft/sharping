@@ -25,7 +25,7 @@ public class ProtectedController {
     }
 
     @RequestMapping(value = "/add", produces = MediaType.TEXT_PLAIN_VALUE)
-    @PreAuthorize("hasRole('ROLE_BASIC')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public String add() {
         repository.saveAndFlush(new Person());
         return "Add! There are " + repository.count() + " persons in the database!";

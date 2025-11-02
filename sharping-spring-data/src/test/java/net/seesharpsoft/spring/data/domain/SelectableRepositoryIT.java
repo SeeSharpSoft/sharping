@@ -10,29 +10,31 @@ import net.seesharpsoft.spring.test.ObjectMother;
 import net.seesharpsoft.spring.test.TestApplication;
 import net.seesharpsoft.spring.test.model.Country;
 import net.seesharpsoft.spring.test.model.Team;
-import net.seesharpsoft.spring.test.model.User;
+import net.seesharpsoft.spring.test.model.Person;
 import net.seesharpsoft.spring.test.selectable.CountryInfo;
-import net.seesharpsoft.spring.test.selectable.UserInfo;
-import net.seesharpsoft.spring.test.selectable.UserWithCountryInfo;
+import net.seesharpsoft.spring.test.selectable.PersonInfo;
+import net.seesharpsoft.spring.test.selectable.PersonWithCountryInfo;
 import org.assertj.core.groups.Tuple;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit4.SpringRunner;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = TestApplication.class)
 @AutoConfigureDataJpa
 @Transactional
@@ -41,14 +43,14 @@ public class SelectableRepositoryIT {
     @Autowired
     private EntityManager entityManager;
 
-    User abby, bob, carla;
+    Person abby, bob, carla;
     Country france, germany, us;
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
-        abby = ObjectMother.getUserAbby();
-        bob = ObjectMother.getUserBob();
-        carla = ObjectMother.getUserCarla();
+        abby = ObjectMother.getPersonAbby();
+        bob = ObjectMother.getPersonBob();
+        carla = ObjectMother.getPersonCarla();
         Team teamA = entityManager.merge(ObjectMother.getTeamA());
         Team teamB = entityManager.merge(ObjectMother.getTeamB());
         germany = entityManager.merge(ObjectMother.getCountryDE());
@@ -57,13 +59,13 @@ public class SelectableRepositoryIT {
         abby.setCountry(germany);
         abby.setTeams(new HashSet<>(Arrays.asList(teamA, teamB)));
         bob.setCountry(germany);
-        bob.setTeams(new HashSet<>(Arrays.asList(teamA)));
+        bob.setTeams(new HashSet<>(Collections.singletonList(teamA)));
         carla.setCountry(france);
-        carla.setTeams(new HashSet<>(Arrays.asList(teamB)));
+        carla.setTeams(new HashSet<>(Collections.singletonList(teamB)));
         abby = entityManager.merge(abby);
         bob = entityManager.merge(bob);
         carla = entityManager.merge(carla);
-        entityManager.merge(new User(100, "UNKNOWN", null, null));
+        entityManager.merge(new Person(100, "UNKNOWN", null, null));
         entityManager.flush();
         entityManager.clear();
     }
@@ -75,9 +77,9 @@ public class SelectableRepositoryIT {
 
     @Test
     public void should_simple_find_all() {
-        SelectableRepository<UserInfo> repo = getSelectableRepository(UserInfo.class);
+        SelectableRepository<PersonInfo> repo = getSelectableRepository(PersonInfo.class);
 
-        List<UserInfo> resultList = repo.findAll();
+        List<PersonInfo> resultList = repo.findAll();
 
         assertThat(resultList)
                 .extracting("id", "fullName")
@@ -91,9 +93,9 @@ public class SelectableRepositoryIT {
 
     @Test
     public void should_find_all_with_mail() {
-        SelectableRepository<UserInfo> repo = getSelectableRepository(UserInfo.class);
+        SelectableRepository<PersonInfo> repo = getSelectableRepository(PersonInfo.class);
 
-        List<UserInfo> resultList = repo.findAll(
+        List<PersonInfo> resultList = repo.findAll(
                 new OperationSpecification<>(
                         Operations.not(Operations.equals(Operands.asReference("mail"), null))
                 )
@@ -110,9 +112,9 @@ public class SelectableRepositoryIT {
 
     @Test
     public void should_find_all_sorted() {
-        SelectableRepository<UserWithCountryInfo> repo = getSelectableRepository(UserWithCountryInfo.class);
+        SelectableRepository<PersonWithCountryInfo> repo = getSelectableRepository(PersonWithCountryInfo.class);
 
-        List<UserWithCountryInfo> resultList = repo.findAll(
+        List<PersonWithCountryInfo> resultList = repo.findAll(
                 Sort.by(Sort.Direction.ASC, "lastName")
         );
 
@@ -129,9 +131,9 @@ public class SelectableRepositoryIT {
 
     @Test
     public void should_find_all_with_join() {
-        SelectableRepository<UserWithCountryInfo> repo = getSelectableRepository(UserWithCountryInfo.class);
+        SelectableRepository<PersonWithCountryInfo> repo = getSelectableRepository(PersonWithCountryInfo.class);
 
-        List<UserWithCountryInfo> resultList = repo.findAll(
+        List<PersonWithCountryInfo> resultList = repo.findAll(
                 Sort.by(Sort.Direction.ASC, "lastName")
         );
 
@@ -147,9 +149,9 @@ public class SelectableRepositoryIT {
 
     @Test
     public void should_find_one_with_join() {
-        SelectableRepository<UserWithCountryInfo> repo = getSelectableRepository(UserWithCountryInfo.class);
+        SelectableRepository<PersonWithCountryInfo> repo = getSelectableRepository(PersonWithCountryInfo.class);
 
-        UserWithCountryInfo countryUser = repo.findOne(
+        PersonWithCountryInfo countryUser = repo.findOne(
                 new OperationSpecification<>(Operations.equals(Operands.asReference("mail"), abby.getMail()))
         ).orElse(null);
 
@@ -164,12 +166,12 @@ public class SelectableRepositoryIT {
 
         CountryInfo countryInfo = repo.findOne(
                 new OperationSpecification<>(
-                        Operations.equals(Operands.asReference("users.mail"), abby.getMail())
+                        Operations.equals(Operands.asReference("people.mail"), abby.getMail())
                 )
         ).orElse(null);
 
         assertThat(countryInfo)
-                .extracting("id", "name", "userCount", "teamCount")
+                .extracting("id", "name", "peopleCount", "teamCount")
                 .containsExactly(abby.getCountry().getId(), abby.getCountry().getName(), 2L, 2L);
     }
 
@@ -179,13 +181,13 @@ public class SelectableRepositoryIT {
 
         List<CountryInfo> countryInfos = repo.findAll(
                 new OperationSpecification<>(
-                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                        Operations.not(Operations.equals(Operands.asReference("people.mail"), null))
                 ),
                 Sort.by(Sort.Direction.ASC, "name")
         );
 
         assertThat(countryInfos)
-                .extracting("id", "name", "userCount", "teamCount")
+                .extracting("id", "name", "peopleCount", "teamCount")
                 .containsExactly(
                         Tuple.tuple(france.getId(), france.getName(), 1L, 1L),
                         Tuple.tuple(germany.getId(), germany.getName(), 2L, 2L)
@@ -198,13 +200,13 @@ public class SelectableRepositoryIT {
 
         List<CountryInfo> countryInfos = repo.findAll(
                 new OperationSpecification<>(
-                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                        Operations.not(Operations.equals(Operands.asReference("people.mail"), null))
                 ),
-                Sort.by(Sort.Direction.DESC, "userCount")
+                Sort.by(Sort.Direction.DESC, "peopleCount")
         );
 
         assertThat(countryInfos)
-                .extracting("id", "name", "userCount", "teamCount")
+                .extracting("id", "name", "peopleCount", "teamCount")
                 .containsExactly(
                         Tuple.tuple(germany.getId(), germany.getName(), 2L, 2L),
                         Tuple.tuple(france.getId(), france.getName(), 1L, 1L)
@@ -226,7 +228,7 @@ public class SelectableRepositoryIT {
 
         long count = repo.count(
                 new OperationSpecification<>(
-                        Operations.not(Operations.equals(Operands.asReference("users.mail"), null))
+                        Operations.not(Operations.equals(Operands.asReference("people.mail"), null))
                 )
         );
 

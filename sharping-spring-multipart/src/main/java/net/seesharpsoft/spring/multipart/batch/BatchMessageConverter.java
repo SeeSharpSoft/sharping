@@ -3,10 +3,7 @@ package net.seesharpsoft.spring.multipart.batch;
 import net.seesharpsoft.spring.multipart.MultipartEntity;
 import net.seesharpsoft.spring.multipart.MultipartMessage;
 import net.seesharpsoft.spring.multipart.MultipartRfc2046MessageConverter;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -49,7 +46,7 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
         boolean hasHeader = headerContentSplitIndex != -1;
         String urlPart = hasHeader ? content.substring(0, headerContentSplitIndex) : content;
         String[] targetUrlParts = urlPart.split(" ");
-        entity.setMethod(HttpMethod.resolve(targetUrlParts[0]));
+        entity.setMethod(HttpMethod.valueOf(targetUrlParts[0]));
         entity.setUrl(targetUrlParts[1]);
 
         applyEntityHeaders(entity, hasHeader ? content.substring(headerContentSplitIndex, content.length()) : null);
@@ -70,7 +67,7 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
     }
 
     protected void writeResponseStatus(OutputStreamWriter writer, BatchResponse.Entity entry) throws IOException {
-        HttpStatus status = entry.getStatus();
+        HttpStatusCode status = entry.getStatus();
 
         if (status == null) {
             status = HttpStatus.UNPROCESSABLE_ENTITY;
@@ -79,15 +76,19 @@ public class BatchMessageConverter extends MultipartRfc2046MessageConverter {
         writer.write("HTTP/1.1 ");
         writer.write(status.value() + "");
         writer.write(" ");
-        writer.write(status.getReasonPhrase());
+        writer.write(status instanceof HttpStatus ? ((HttpStatus)status).getReasonPhrase() : status.toString());
         writer.write(CRLF);
     }
 
     protected void writePartContentHeader(OutputStreamWriter writer, HttpHeaders headers, int contentLength) throws IOException {
-        MediaType contentType = headers.getContentType();
+        MediaType contentType = MediaType.ALL;
 
-        if (contentType == null) {
-            contentType = MediaType.ALL;
+        if (headers != null) {
+            contentType = headers.getContentType();
+
+            if (contentType == null) {
+                contentType = MediaType.ALL;
+            }
         }
 
         writer.write(HttpHeaders.CONTENT_TYPE);

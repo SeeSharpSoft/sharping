@@ -2,7 +2,7 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import net.seesharpsoft.commons.util.Tokenizer;
 import net.seesharpsoft.spring.data.jpa.expression.Dialect.Token;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.List;

@@ -1,6 +1,6 @@
 package net.seesharpsoft.spring.data.jpa.selectable;
 
-import javax.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.JoinType;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)

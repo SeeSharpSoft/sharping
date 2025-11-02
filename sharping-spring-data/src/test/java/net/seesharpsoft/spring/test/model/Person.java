@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -13,9 +13,9 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Person {
 
-    public User(int id, String firstName, String lastName, String mail) {
+    public Person(int id, String firstName, String lastName, String mail) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

@@ -3,13 +3,13 @@ package net.seesharpsoft.spring.test.selectable;
 import lombok.AllArgsConstructor;
 import net.seesharpsoft.spring.data.jpa.selectable.Select;
 import net.seesharpsoft.spring.data.jpa.selectable.Selectable;
-import net.seesharpsoft.spring.test.model.User;
+import net.seesharpsoft.spring.test.model.Person;
 
 @Selectable(
-        from = User.class
+        from = Person.class
 )
 @AllArgsConstructor
-public class UserInfo {
+public class PersonInfo {
 
     private int id;
 

@@ -2,7 +2,7 @@ package net.seesharpsoft.spring.test;
 
 import net.seesharpsoft.spring.test.model.Country;
 import net.seesharpsoft.spring.test.model.Team;
-import net.seesharpsoft.spring.test.model.User;
+import net.seesharpsoft.spring.test.model.Person;
 
 public class ObjectMother {
 
@@ -10,14 +10,14 @@ public class ObjectMother {
         //static
     }
 
-    public static final User getUserAbby() {
-        return new User(1, "Abby", "Z", "abby@mail.com");
+    public static final Person getPersonAbby() {
+        return new Person(1, "Abby", "Z", "abby@mail.com");
     }
-    public static final User getUserBob() {
-        return new User(2, "Bob", "Y", "bob@mail.com");
+    public static final Person getPersonBob() {
+        return new Person(2, "Bob", "Y", "bob@mail.com");
     }
-    public static final User getUserCarla() {
-        return new User(3, "Carla", "X", "carla@mail.com");
+    public static final Person getPersonCarla() {
+        return new Person(3, "Carla", "X", "carla@mail.com");
     }
 
     public static final Country getCountryDE() {

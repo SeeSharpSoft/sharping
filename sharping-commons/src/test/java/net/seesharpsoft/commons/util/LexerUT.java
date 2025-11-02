@@ -1,7 +1,9 @@
 package net.seesharpsoft.commons.util;
 
-import org.junit.Before;
-import org.junit.Test;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -12,7 +14,7 @@ public class LexerUT {
 
     private Tokenizer<Integer> tokenizer;
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
         tokenizer = new Tokenizer();
         tokenizer.add(0, "abc");

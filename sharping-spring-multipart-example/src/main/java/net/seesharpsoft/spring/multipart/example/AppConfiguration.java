@@ -2,6 +2,7 @@ package net.seesharpsoft.spring.multipart.example;
 
 import net.seesharpsoft.spring.multipart.batch.BatchMessageConverter;
 import net.seesharpsoft.spring.multipart.batch.BatchMultipartResolver;
+import net.seesharpsoft.spring.multipart.batch.services.BatchRequestProperties;
 import net.seesharpsoft.spring.multipart.batch.services.BatchRequestService;
 import net.seesharpsoft.spring.multipart.batch.services.DispatcherBatchRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,11 @@ public class AppConfiguration extends WebMvcConfigurationSupport {
 
     @Bean
     @Autowired
-    BatchRequestService batchService(DispatcherServlet dispatcherServlet) {
-        return new DispatcherBatchRequestService(dispatcherServlet);
+    BatchRequestService batchService(
+            BatchRequestProperties batchRequestProperties,
+            DispatcherServlet dispatcherServlet
+    ) {
+        return new DispatcherBatchRequestService(batchRequestProperties, dispatcherServlet);
     }
 
     @Bean

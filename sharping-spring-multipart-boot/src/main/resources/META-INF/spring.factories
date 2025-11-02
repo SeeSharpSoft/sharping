@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-net.seesharpsoft.spring.multipart.boot.MultipartConfiguration,\
-net.seesharpsoft.spring.multipart.boot.controller.BatchRequestController

@@ -1,7 +1,5 @@
 package net.seesharpsoft.spring.data.domain.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import net.seesharpsoft.spring.data.domain.SelectableInfo;
 import net.seesharpsoft.spring.data.domain.SelectableRepository;
 import net.seesharpsoft.spring.data.domain.SqlParser;
@@ -12,27 +10,30 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TupleElement;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.SingularAttribute;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
-    @AllArgsConstructor
     private static class SimpleTupleElement implements ExpressionHolder {
 
-        @Getter
         private final Expression expression;
 
-        @Getter
         private final String alias;
+
+        public SimpleTupleElement(Expression expression, String alias) {
+            this.expression = expression;
+            this.alias = alias;
+        }
 
         public SimpleTupleElement(Expression expression) {
             this(expression, expression.getAlias());
@@ -41,6 +42,16 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         @Override
         public Class getJavaType() {
             return expression.getJavaType();
+        }
+
+        @Override
+        public String getAlias() {
+            return this.alias;
+        }
+
+        @Override
+        public Expression getExpression() {
+            return this.expression;
         }
     }
 
@@ -60,7 +71,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
     }
 
     protected List<TupleElement> getAllTupleElements(AbstractQuery<?> query) {
-        List<TupleElement> tupleElements = Operands.getContexts(query);
+        List<TupleElement> tupleElements = Operands.getContexts(query, jpaVendorUtilProxy);
         query.getRoots().forEach((Root<?> root) ->
                 root.getModel().getAttributes().forEach((Attribute attribute) -> {
                             if (attribute instanceof SingularAttribute) {
@@ -118,7 +129,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
     protected AbstractQuery prepareGroupBy(Root root, AbstractQuery query, CriteriaBuilder builder) {
         List<Expression> groupBys = new ArrayList<>();
-        for (Selection<?> selection : Operands.getAllSelections(query.getSelection())) {
+        for (Selection<?> selection : Operands.getAllSelections(query.getSelection(), jpaVendorUtilProxy)) {
             Assert.isInstanceOf(Expression.class, selection, "selection is expected to be an expression!");
             Expression expression = (Expression) selection;
             if (!isAggregateFunction(expression) && !(expression instanceof Predicate)) {
@@ -229,9 +240,14 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
 
     @Override
     public Page<T> findAll(Specification spec, Pageable pageable) {
+        return findAll(spec, spec, pageable);
+    }
+
+    @Override
+    public Page<T> findAll(Specification<T> spec, Specification<T> countSpec, Pageable pageable) {
         TypedQuery<T> typedQuery = createTypedQuery(spec, pageable);
         List<T> resultList = typedQuery.getResultList();
-        return new PageImpl<>(resultList, pageable, resultList.size());
+        return new PageImpl<>(resultList, pageable, spec.equals(countSpec) ? resultList.size() : count(countSpec));
     }
 
     @Override
@@ -244,5 +260,22 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
     public long count(Specification spec) {
         // TODO create count/count-distinct query
         return findAll(spec).size();
+    }
+
+
+    @Override
+    public boolean exists(Specification<T> spec) {
+        return count(spec) > 0;
+    }
+
+    @Override
+    public long delete(Specification<T> spec) {
+        // Selectable can't be deleted
+        return 0;
+    }
+
+    @Override
+    public <S extends T, R> R findBy(Specification<T> spec, Function<? super SpecificationFluentQuery<S>, R> queryFunction) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

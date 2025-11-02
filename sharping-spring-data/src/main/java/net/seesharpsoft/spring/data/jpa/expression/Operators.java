@@ -4,8 +4,8 @@ import net.seesharpsoft.commons.TriFunction;
 import net.seesharpsoft.spring.data.jpa.expression.Operator.NAry;
 import org.springframework.util.Assert;
 
-import javax.persistence.TupleElement;
-import javax.persistence.criteria.*;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.criteria.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -17,6 +17,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Operators {
+
+
 
     private Operators() {
         // static

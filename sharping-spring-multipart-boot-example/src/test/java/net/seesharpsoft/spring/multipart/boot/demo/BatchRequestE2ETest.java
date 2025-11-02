@@ -1,11 +1,12 @@
 package net.seesharpsoft.spring.multipart.boot.demo;
 
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,7 +15,7 @@ import java.nio.charset.Charset;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class BatchRequestE2ETest {
 
@@ -22,7 +23,7 @@ public class BatchRequestE2ETest {
         return new HttpHeaders() {{
             String auth = username + ":" + password;
             byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(Charset.forName("US-ASCII")) );
+                    auth.getBytes(Charset.forName("US-ASCII")), false);
             String authHeader = "Basic " + new String( encodedAuth );
             set( "Authorization", authHeader );
         }};
@@ -32,7 +33,7 @@ public class BatchRequestE2ETest {
     public void simple_batch_request_should_fail_without_authorization() {
         RestTemplate restTemplate = new RestTemplate();
 
-        HttpStatus status = null;
+        HttpStatusCode status = null;
 
         try {
             restTemplate.exchange(

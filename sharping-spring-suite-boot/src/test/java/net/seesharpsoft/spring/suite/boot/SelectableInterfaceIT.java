@@ -6,13 +6,14 @@ import net.seesharpsoft.spring.suite.test.TestApplication;
 import net.seesharpsoft.spring.suite.test.selectable.SelectableUser;
 import net.seesharpsoft.spring.suite.test.selectable.SimpleUser;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { TestApplication.class })
 public class SelectableInterfaceIT {
 

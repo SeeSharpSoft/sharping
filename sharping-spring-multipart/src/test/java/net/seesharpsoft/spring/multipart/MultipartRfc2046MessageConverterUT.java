@@ -2,8 +2,9 @@ package net.seesharpsoft.spring.multipart;
 
 import net.seesharpsoft.spring.multipart.test.util.HttpInputMessageDummy;
 import net.seesharpsoft.commons.util.SharpIO;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
@@ -15,9 +16,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
 
 public class MultipartRfc2046MessageConverterUT {
 
@@ -28,7 +29,7 @@ public class MultipartRfc2046MessageConverterUT {
 
     private MultipartRfc2046MessageConverter messageConverter;
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
         messageConverter = new MultipartRfc2046MessageConverter();
     }

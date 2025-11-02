@@ -1,7 +1,7 @@
 package net.seesharpsoft.spring.data.jpa;
 
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.EntityType;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.EntityType;
 import java.util.List;
 import java.util.Set;
 

@@ -2,9 +2,9 @@ package net.seesharpsoft.spring.data.jpa.expression;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.TupleElement;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

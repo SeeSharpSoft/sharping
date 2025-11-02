@@ -5,14 +5,13 @@ import org.hibernate.MappingException;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.CollectionDataAccess;
 import org.hibernate.collection.spi.PersistentCollection;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.mapping.Collection;
 import org.hibernate.persister.collection.BasicCollectionPersister;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.spi.PersisterCreationContext;
 
-import javax.persistence.JoinTable;
+import jakarta.persistence.JoinTable;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
@@ -31,11 +30,11 @@ public class ManyToManyEntityAwareCollectionPersister extends BasicCollectionPer
                 JoinTable joinTable = field.getAnnotation(JoinTable.class);
                 String targetName = joinTable.name();
                 final String needle = '.' + targetName;
-                String foundKey = this.getFactory().getAllClassMetadata().keySet().stream().filter(key -> key.endsWith(needle)).findFirst().orElse(null);
-                if (foundKey == null) {
-                    throw new ClassNotFoundException(targetName);
-                }
-                manyToManyRelationPersister = (AbstractEntityPersister)this.getFactory().getEntityPersister(foundKey);
+//                String foundKey = this.getFactory().getAllClassMetadata().keySet().stream().filter(key -> key.endsWith(needle)).findFirst().orElse(null);
+//                if (foundKey == null) {
+//                    throw new ClassNotFoundException(targetName);
+//                }
+//                manyToManyRelationPersister = (AbstractEntityPersister)this.getFactory().getEntityPersister(foundKey);
             } catch (ClassNotFoundException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
@@ -53,8 +52,8 @@ public class ManyToManyEntityAwareCollectionPersister extends BasicCollectionPer
         return false;
     }
 
-    @Override
-    protected int doUpdateRows(Serializable id, PersistentCollection collection, SharedSessionContractImplementor session) throws HibernateException {
-        return 0;
-    }
+//    @Override
+//    protected int doUpdateRows(Serializable id, PersistentCollection collection, SharedSessionContractImplementor session) throws HibernateException {
+//        return 0;
+//    }
 }
