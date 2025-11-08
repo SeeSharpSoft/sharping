@@ -14,6 +14,7 @@ import net.seesharpsoft.spring.test.model.Person;
 import net.seesharpsoft.spring.test.selectable.CountryInfo;
 import net.seesharpsoft.spring.test.selectable.PersonInfo;
 import net.seesharpsoft.spring.test.selectable.PersonWithCountryInfo;
+import net.seesharpsoft.spring.test.selectable.PersonWithOptionalCountryInfo;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -138,7 +139,25 @@ public class SelectableRepositoryIT {
         );
 
         assertThat(resultList)
-                .extracting("id", "fullName", "country", "countrySharingUserCount")
+                .extracting("id", "fullName", "country", "countrySharingPeopleCount")
+                .containsExactly(
+                        Tuple.tuple(100, null, null, 0L),
+                        Tuple.tuple(3, "Carla X", carla.getCountry().getName(), 1L),
+                        Tuple.tuple(2, "Bob Y", bob.getCountry().getName(), 2L),
+                        Tuple.tuple(1, "Abby Z", abby.getCountry().getName(), 2L)
+                );
+    }
+
+    @Test
+    public void should_find_all_sorted_with_optional() {
+        SelectableRepository<PersonWithOptionalCountryInfo> repo = getSelectableRepository(PersonWithOptionalCountryInfo.class);
+
+        List<PersonWithOptionalCountryInfo> resultList = repo.findAll(
+                Sort.by(Sort.Direction.ASC, "lastName")
+        );
+
+        assertThat(resultList)
+                .extracting("id", "fullName", "country", "countrySharingPeopleCount")
                 .containsExactly(
                         Tuple.tuple(100, null, null, 0L),
                         Tuple.tuple(3, "Carla X", carla.getCountry().getName(), 1L),
@@ -156,7 +175,7 @@ public class SelectableRepositoryIT {
         ).orElse(null);
 
         assertThat(countryUser)
-                .extracting("id", "fullName", "country", "countrySharingUserCount")
+                .extracting("id", "fullName", "country", "countrySharingPeopleCount")
                 .containsExactly(1, "Abby Z", abby.getCountry().getName(), 2L);
     }
 

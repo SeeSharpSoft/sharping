@@ -167,15 +167,16 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
     }
 
     protected CriteriaQuery<T> applySpecification(Root root, CriteriaQuery<T> query, CriteriaBuilder builder, Specification specification) {
-        if (specification == null) {
+        Predicate predicate = specification == null ? null : specification.toPredicate(root, query, builder);
+        if (predicate == null) {
             return query;
         }
 
         Predicate restriction = query.getRestriction();
         if (restriction == null) {
-            query.where(specification.toPredicate(root, query, builder));
+            query.where(predicate);
         } else {
-            query.where(restriction, specification.toPredicate(root, query, builder));
+            query.where(restriction, predicate);
         }
         return query;
     }
@@ -261,7 +262,6 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         // TODO create count/count-distinct query
         return findAll(spec).size();
     }
-
 
     @Override
     public boolean exists(Specification<T> spec) {

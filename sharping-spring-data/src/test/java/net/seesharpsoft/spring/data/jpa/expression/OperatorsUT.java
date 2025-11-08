@@ -127,13 +127,13 @@ public class OperatorsUT {
                         if (result == null) {
                             boolean failed = false;
                             try {
-                                key.evaluate(pair.getFirst(), pair.getSecond());
+                                key.evaluate(pair.first(), pair.second());
                             } catch(ArithmeticException exc) {
                                 failed = true;
                             }
-                            assertThat(String.format("%s(%s, %s) should fail", key, pair.getFirst(), pair.getSecond()), failed, is(true));
+                            assertThat(String.format("%s(%s, %s) should fail", key, pair.first(), pair.second()), failed, is(true));
                         } else {
-                            assertThat(String.format("%s(%s, %s) = %s", key, pair.getFirst(), pair.getSecond(), result), key.evaluate(pair.getFirst(), pair.getSecond()), is(result));
+                            assertThat(String.format("%s(%s, %s) = %s", key, pair.first(), pair.second(), result), key.evaluate(pair.first(), pair.second()), is(result));
                         }
                     }
                 });

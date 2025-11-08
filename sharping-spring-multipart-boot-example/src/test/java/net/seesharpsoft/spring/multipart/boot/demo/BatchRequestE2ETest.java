@@ -94,7 +94,7 @@ public class BatchRequestE2ETest {
                         "\n" +
                         "GET /greeting?name=Peter&name=Lustig HTTP/1.1\n" +
                         "--batch--",
-                        createHeaders("John", "password")),
+                        createHeaders("user", "password")),
                 String.class);
 
         assertThat(result.getBody(), equalTo("--batch\n" +
@@ -111,7 +111,7 @@ public class BatchRequestE2ETest {
                 "Content-Transfer-Encoding: binary\n" +
                 "\n" +
                 "HTTP/1.1 200 OK\n" +
-                "Content-Type: application/json;charset=UTF-8\n" +
+                "Content-Type: application/json\n" +
                 "Content-Length: 35\n" +
                 "\n" +
                 "{\"id\":1,\"content\":\"Hello, Trevor!\"}\n" +
@@ -120,7 +120,7 @@ public class BatchRequestE2ETest {
                 "Content-Transfer-Encoding: binary\n" +
                 "\n" +
                 "HTTP/1.1 200 OK\n" +
-                "Content-Type: application/json;charset=UTF-8\n" +
+                "Content-Type: application/json\n" +
                 "Content-Length: 41\n" +
                 "\n" +
                 "{\"id\":2,\"content\":\"Hello, Peter,Lustig!\"}\n" +

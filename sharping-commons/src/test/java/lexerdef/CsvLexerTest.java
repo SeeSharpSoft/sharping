@@ -14,7 +14,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
-public class CsvLexerUT {
+public class CsvLexerTest {
 
     private Lexer csvLexer;
 
@@ -51,6 +51,7 @@ public class CsvLexerUT {
         assertThat(stateInfo, hasSize(27000));
     }
 
+    @Test
     public void should_lex_huge_csv() throws IOException, ParseException {
         long start = System.currentTimeMillis();
         List<Lexer.StateInfo> stateInfo = csvLexer.tokenize(SharpIO.readAsString("/lexerdef/csv/huge.csv"));

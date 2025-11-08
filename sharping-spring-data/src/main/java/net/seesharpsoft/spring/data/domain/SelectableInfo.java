@@ -98,7 +98,6 @@ public class SelectableInfo<T> {
             this.joins = createJoinInfos(parser, selectableAnnotation.joins());
             this.where = parser.parseExpression(selectableAnnotation.where());
             this.having = parser.parseExpression(selectableAnnotation.having());
-
         } else {
             this.rootClass = selectableClass;
             this.joins = Collections.emptyList();

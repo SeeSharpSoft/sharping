@@ -28,7 +28,7 @@ public class SelectableInterfaceScanRegistrar implements ImportBeanDefinitionReg
     public static final String SELECTABLE_FACTORY_BEAN_NAME = "selectableRepositoryFactory";
     public static final String SELECTABLE_FACTORY_CREATE_METHOD_NAME = "createRepository";
 
-    public static final void registerSelectableRepositoryDefinitions(BeanDefinitionRegistry beanDefinitionRegistry,
+    public static void registerSelectableRepositoryDefinitions(BeanDefinitionRegistry beanDefinitionRegistry,
                                                                      Environment environment,
                                                                      Class<? extends SelectableRepository> repositoryBaseClass,
                                                                      String[] basePackages) {

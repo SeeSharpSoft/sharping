@@ -8,7 +8,7 @@ import java.text.ParseException;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class TokenizerUT {
+public class TokenizerTest {
 
     @Test
     public void tokens_should_be_compared_by_their_field_values() {

@@ -12,7 +12,7 @@ import java.util.List;
 @NoRepositoryBean
 public interface SelectableRepository<T> extends JpaSpecificationExecutor<T> {
     default List<T> findAll() {
-        return findAll((Specification) null);
+        return findAll((Specification<T>) null);
     }
 
     default Page<T> findAll(Pageable pageable) {

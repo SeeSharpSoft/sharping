@@ -1,9 +1,5 @@
 package net.seesharpsoft.spring.test.selectable;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.seesharpsoft.spring.data.jpa.selectable.Join;
 import net.seesharpsoft.spring.data.jpa.selectable.Joins;
 import net.seesharpsoft.spring.data.jpa.selectable.Select;
@@ -16,19 +12,14 @@ import net.seesharpsoft.spring.test.model.Country;
                 @Join(value = "people", alias = "allPeople")
         )
 )
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CountryInfo {
+public record CountryInfo(
+    int id,
 
-    private int id;
-
-    private String name;
+    String name,
 
     @Select("COUNT_DISTINCT(allPeople.id)")
-    private long peopleCount;
+    long peopleCount,
 
     @Select("COUNT_DISTINCT(allPeople.teams.id)")
-    private long teamCount;
-}
+    long teamCount
+) {}

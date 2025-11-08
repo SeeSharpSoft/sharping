@@ -197,7 +197,8 @@ public class Dialects {
             this.operatorMap.put(sequence, operator);
         }
 
-        protected void addOperators(Pair<String, Operator>... operators) {
+        @SafeVarargs
+        protected final void addOperators(Pair<String, Operator>... operators) {
             Arrays.stream(operators).forEach(pair -> addOperator(pair.getFirst(), pair.getSecond()));
         }
 
@@ -210,7 +211,8 @@ public class Dialects {
             this.tokenPatternMap.put(token, pattern);
         }
 
-        protected void addTokenPatterns(Pair<Token, String>... tokenPatterns) {
+        @SafeVarargs
+        protected final void addTokenPatterns(Pair<Token, String>... tokenPatterns) {
             Arrays.stream(tokenPatterns).forEach(pair -> addTokenPattern(pair.getFirst(), pair.getSecond()));
         }
 

@@ -18,7 +18,7 @@ public class SharpingRegistryPostProcessor implements BeanDefinitionRegistryPost
         this.environment = environment;
     }
 
-    protected Class<? extends  SelectableRepository> getSelectableRepositoryImplementation() {
+    protected Class<? extends SelectableRepository> getSelectableRepositoryImplementation() {
         try {
             return (Class<? extends SelectableRepository>)Class.forName(environment.getProperty(ConfigurationProperties.SELECTABLE_IMPL_CLASS, SelectableRepositoryImpl.class.getName()));
         } catch (ClassNotFoundException exc) {

@@ -11,7 +11,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class FileWatcherUT {
+public class FileWatcherTest {
 
     private static class MyWatcherImplementation extends FileWatcher {
 

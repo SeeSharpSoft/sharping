@@ -20,5 +20,5 @@ public class PersonWithCountryInfo {
     private String country;
 
     @Select("COUNT(country/people/id)")
-    private long countrySharingUserCount;
+    private long countrySharingPeopleCount;
 }

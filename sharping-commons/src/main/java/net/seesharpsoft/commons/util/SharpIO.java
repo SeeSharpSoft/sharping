@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -83,6 +84,30 @@ public class SharpIO {
 
     public static String readAsString(String fileName) throws IOException {
         return readAsString(fileName, Charset.defaultCharset());
+    }
+
+    public static String serializeBase64(Serializable serializable) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+
+            oos.writeObject(serializable);
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static <T> T deserializeBase64(String base64String) {
+        byte[] data = Base64.getDecoder().decode(base64String);
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
+            return (T) ois.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static Byte[] byteArrayToObjects(byte[] primitiveByteArray) {
