@@ -34,10 +34,9 @@ public class OperationSpecification<T> implements Specification<T> {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof OperationSpecification)) {
+        if (!(other instanceof OperationSpecification otherCondition)) {
             return false;
         }
-        OperationSpecification otherCondition = (OperationSpecification)other;
         return Objects.equals(operation, otherCondition.getOperation());
     }
 

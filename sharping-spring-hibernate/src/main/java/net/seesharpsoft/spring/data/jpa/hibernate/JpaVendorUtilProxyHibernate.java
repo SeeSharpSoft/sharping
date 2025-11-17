@@ -7,6 +7,7 @@ import jakarta.persistence.criteria.Expression;
 import org.hibernate.query.criteria.JpaSelection;
 import org.hibernate.query.sqm.function.FunctionKind;
 import org.hibernate.query.sqm.tree.expression.SqmFunction;
+import org.hibernate.query.sqm.tree.select.SqmDynamicInstantiation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +24,7 @@ public class JpaVendorUtilProxyHibernate implements JpaVendorUtilProxy {
         if (selection == null) {
             return Collections.emptyList();
         }
-        if (selection.isCompoundSelection() || selection instanceof JpaSelection<?>) {
+        if (selection.isCompoundSelection() || selection instanceof SqmDynamicInstantiation<?>) {
             List<Selection<?>> result = new ArrayList<>();
             selection.getCompoundSelectionItems().forEach(compoundSelection -> result.addAll(getAllSelections(compoundSelection)));
             return result;

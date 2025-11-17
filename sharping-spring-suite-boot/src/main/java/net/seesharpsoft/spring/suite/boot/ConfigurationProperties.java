@@ -20,7 +20,7 @@ public class ConfigurationProperties {
     public static final String SELECTABLE_IMPL_CLASS = SELECTABLE_ROOT + ".repositoryBaseClass";
     public static final String SELECTABLE_BASE_PACKAGES = SELECTABLE_ROOT + ".packages";
 
-    private ExpressionDialect expressionDialect = ExpressionDialect.None;
+    private ExpressionDialect expressionDialect = ExpressionDialect.OData;
     private boolean specificationHandlerEnabled = false;
     private boolean pageableHandlerEnabled = false;
     private boolean selectableRepositoryEnabled = true;

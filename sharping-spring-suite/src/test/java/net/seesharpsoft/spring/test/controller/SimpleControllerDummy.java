@@ -13,12 +13,12 @@ public class SimpleControllerDummy {
     public static final String NULL_STRING = "<NULL>";
     
     @RequestMapping(value = "/specification", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String specification(Specification specification) {
+    public String specification(Specification<?> specification) {
         return specification.toString();
     }
 
     @RequestMapping(value = "/specificationWithQualifier", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String specificationWithRequestParam(@Qualifier(value = "q") Specification specification) {
+    public String specificationWithRequestParam(@Qualifier(value = "q") Specification<?> specification) {
         return specification.toString();
     }
 

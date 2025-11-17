@@ -9,7 +9,7 @@ public class HelloController {
 
     @RequestMapping(value = "/hello", produces = MediaType.TEXT_PLAIN_VALUE)
     public String index() throws InterruptedException {
-        Thread.sleep(3000);
+        Thread.sleep(1000);
         return "Greetings from Spring Boot!";
     }
 

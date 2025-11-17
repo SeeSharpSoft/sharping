@@ -14,11 +14,15 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @ConditionalOnWebApplication
 @EnableConfigurationProperties(ConfigurationProperties.class)
 public class SuiteWebConfiguration extends WebMvcConfigurationSupport {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuiteWebConfiguration.class);
 
     @Autowired
     ConfigurationProperties properties;
@@ -27,7 +31,11 @@ public class SuiteWebConfiguration extends WebMvcConfigurationSupport {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = ConfigurationProperties.WEB_RESOLVER_SPECIFICATION)
     SpecificationHandlerMethodArgumentResolver specificationHandlerMethodArgumentResolver(
-            Converter<String, Specification> specificationConverter) {
+            Converter<String, Specification<?>> specificationConverter) {
+
+        LOGGER.debug("Creating SpecificationHandlerMethodArgumentResolver bean with converter: {} and expressionDialect: {}",
+                specificationConverter, properties.getExpressionDialect());
+
         return new SpecificationHandlerMethodArgumentResolver(specificationConverter);
     }
 
@@ -35,6 +43,12 @@ public class SuiteWebConfiguration extends WebMvcConfigurationSupport {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = ConfigurationProperties.WEB_RESOLVER_LIMIT_OFFSET)
     SortHandlerMethodArgumentResolver sortHandlerMethodArgumentResolver() {
+
+        LOGGER.debug("Creating SortHandlerMethodArgumentResolver bean "
+                + "(pageable handler enabled: {}, specification handler enabled: {})",
+                properties.isPageableHandlerEnabled(),
+                properties.isSpecificationHandlerEnabled());
+
         return new SortHandlerMethodArgumentResolver();
     }
 
@@ -43,6 +57,10 @@ public class SuiteWebConfiguration extends WebMvcConfigurationSupport {
     @ConditionalOnProperty(name = ConfigurationProperties.WEB_RESOLVER_LIMIT_OFFSET)
     OffsetLimitPageHandlerMethodArgumentResolver pageableHandlerMethodArgumentResolver(
             @Lazy SortHandlerMethodArgumentResolver sortHandlerMethodArgumentResolver) {
+
+        LOGGER.debug("Creating OffsetLimitPageHandlerMethodArgumentResolver bean using SortHandlerMethodArgumentResolver: {}",
+                sortHandlerMethodArgumentResolver);
+
         return new OffsetLimitPageHandlerMethodArgumentResolver(sortHandlerMethodArgumentResolver);
     }
 }

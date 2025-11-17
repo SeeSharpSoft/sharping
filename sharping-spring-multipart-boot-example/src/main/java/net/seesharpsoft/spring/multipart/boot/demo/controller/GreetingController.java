@@ -15,7 +15,7 @@ public class GreetingController {
 
     @RequestMapping("/greeting")
     public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) throws InterruptedException {
-        Thread.sleep(3000);
+        Thread.sleep(500);
         return new Greeting(counter.incrementAndGet(),
                 String.format(template, name));
     }

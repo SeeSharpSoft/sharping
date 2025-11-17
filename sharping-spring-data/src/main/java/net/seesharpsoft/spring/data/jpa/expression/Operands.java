@@ -100,14 +100,14 @@ public class Operands {
      * @param elements    available elements
      * @return the found element as expression or null
      */
-    public static Expression findExpression(String nameOrAlias, List<TupleElement> elements) {
+    public static TupleElement findTupleElement(String nameOrAlias, List<TupleElement> elements) {
         Assert.notNull(elements, "elements must not be null!");
         return elements.stream()
                 .filter(element ->
-                        ((element instanceof Expression || element instanceof ExpressionHolder) && nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
-                                (element.getAlias() == null && element instanceof Path && (((Path) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute) ((Path) element).getModel()).getName()))
+                        (nameOrAlias.equalsIgnoreCase(element.getAlias())) ||
+                                (element.getAlias() == null && element instanceof Path && (((Path<?>) element).getModel() instanceof Attribute) && nameOrAlias.equalsIgnoreCase(((Attribute<?, ?>) ((Path<?>) element).getModel()).getName()))
                 )
-                .map(element -> element instanceof ExpressionHolder ? ((ExpressionHolder) element).getExpression() : (Expression) element)
+                .map(element -> element instanceof ExpressionHolder ? ((ExpressionHolder<?>) element).getExpression() : element)
                 .findFirst().orElse(null);
     }
 
@@ -119,7 +119,7 @@ public class Operands {
      * @param query             the query
      * @return an expression
      */
-    public static Expression getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
+    public static TupleElement getPath(From from, String nameOrAliasOrPath, AbstractQuery query) {
         return getPath(from, nameOrAliasOrPath, getContexts(query));
     }
 
@@ -141,7 +141,7 @@ public class Operands {
      * @param elements available elements to search in
      * @return a path
      */
-    public static final Expression getPath(From from, String[] paths, List<TupleElement> elements) {
+    public static final TupleElement getPath(From from, String[] paths, List<TupleElement> elements) {
         Assert.notNull(elements, "elements must not be null");
         if (paths == null || paths.length == 0) {
             return from;
@@ -149,12 +149,12 @@ public class Operands {
         Path current = from;
         int firstIndex = 0;
         int lastIndex = paths.length - 1;
-        Expression expression = findExpression(paths[0], elements);
-        if (expression != null) {
+        TupleElement<?> tupleElement = findTupleElement(paths[0], elements);
+        if (tupleElement != null) {
             if (paths.length == 1) {
-                return expression;
-            } else if (expression instanceof Path) {
-                current = (Path) expression;
+                return tupleElement;
+            } else if (tupleElement instanceof Path) {
+                current = (Path) tupleElement;
                 ++firstIndex;
             }
         }
@@ -173,7 +173,7 @@ public class Operands {
      * @param elements          available elements to search in
      * @return a path
      */
-    public static final Expression getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
+    public static final TupleElement getPath(From from, String nameOrAliasOrPath, List<TupleElement> elements) {
         if (nameOrAliasOrPath == null || nameOrAliasOrPath.isEmpty()) {
             return from;
         }
@@ -187,7 +187,7 @@ public class Operands {
      * @param nameOrAliasOrPath name, alias or path of the expression
      * @return a path
      */
-    public static final Expression getPath(From from, String nameOrAliasOrPath) {
+    public static final TupleElement getPath(From from, String nameOrAliasOrPath) {
         return getPath(from, nameOrAliasOrPath, Collections.emptyList());
     }
 
@@ -215,11 +215,23 @@ public class Operands {
         return jpaVendorUtilProxy.getAllSelections(selection);
     }
 
+    // TODO workaround to BUG?!!
+    private static Class SqmDynamicInstantiationClass;
+
+    static {
+        try {
+            SqmDynamicInstantiationClass = Class.forName("org.hibernate.query.sqm.tree.select.SqmDynamicInstantiation");
+        } catch (ClassNotFoundException e) {
+            SqmDynamicInstantiationClass = null;
+        }
+    }
+
     public static List<Selection<?>> getAllSelections(Selection<?> selection) {
         if (selection == null) {
             return Collections.emptyList();
         }
-        if (selection.isCompoundSelection()) {
+        // TODO WORKAROUND
+        if (selection.isCompoundSelection() || (SqmDynamicInstantiationClass != null && SqmDynamicInstantiationClass.isInstance(selection))) {
             List<Selection<?>> result = new ArrayList<>();
             selection.getCompoundSelectionItems().forEach(compoundSelection -> result.addAll(getAllSelections(compoundSelection)));
             return result;
@@ -273,12 +285,16 @@ public class Operands {
 
         @Override
         public Expression asExpression(From root, AbstractQuery query, CriteriaBuilder criteriaBuilder, Class targetType) {
-            return getPath(root, getValue(), query);
+            TupleElement element = getPath(root, getValue(), query);
+            if (!(element instanceof Expression)) {
+                return criteriaBuilder.literal(getValue());
+            }
+            return (Expression)element;
         }
 
         @Override
         public Class getJavaType(From root, List<TupleElement> contexts) {
-            Expression expression = getPath(root, (String) getValue(), contexts);
+            TupleElement expression = getPath(root, (String) getValue(), contexts);
             return expression == null ? null : expression.getJavaType();
         }
     }

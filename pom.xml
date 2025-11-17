@@ -10,10 +10,11 @@
         <module>sharping-spring-data</module>
         <module>sharping-spring-multipart</module>
         <module>sharping-spring-multipart-boot</module>
-        <module>sharping-spring-suite</module>
         <module>sharping-spring-multipart-example</module>
         <module>sharping-spring-multipart-boot-example</module>
+        <module>sharping-spring-suite</module>
         <module>sharping-spring-suite-boot</module>
+        <module>sharping-spring-suite-boot-example</module>
         <module>sharping-spring-hibernate</module>
     </modules>
     <packaging>pom</packaging>

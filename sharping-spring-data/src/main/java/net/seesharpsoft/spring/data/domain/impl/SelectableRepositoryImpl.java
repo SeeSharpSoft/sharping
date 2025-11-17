@@ -146,7 +146,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-    protected CriteriaQuery<T> prepareQuery(Root root, CriteriaQuery query, CriteriaBuilder builder) {
+    protected CriteriaQuery<T> prepareQuery(Root<T> root, CriteriaQuery<T> query, CriteriaBuilder builder) {
         return (CriteriaQuery<T>) prepareHaving(
                 root,
                 prepareGroupBy(
@@ -172,6 +172,17 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
             return query;
         }
 
+        System.out.println("Predicate: " + predicate);
+        if (this.jpaVendorUtilProxy.isAggregateFunction(predicate)) {
+            System.out.println("predicate Aggregate: " + predicate);
+        }
+        for (Expression expression : predicate.getExpressions()) {
+            System.out.println("Expression: " + expression);
+            if (this.jpaVendorUtilProxy.isAggregateFunction(expression)) {
+                System.out.println("Aggregate: " + expression);
+            }
+        }
+
         Predicate restriction = query.getRestriction();
         if (restriction == null) {
             query.where(predicate);
@@ -191,7 +202,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         List<Expression<?>> groupBys = new ArrayList<>(query.getGroupList());
         while (sortIterator.hasNext()) {
             Sort.Order sortOrder = sortIterator.next();
-            Expression orderExpression = Operands.getPath(root, sortOrder.getProperty(), elements);
+            Expression orderExpression = (Expression) Operands.getPath(root, sortOrder.getProperty(), elements);
             Assert.notNull(orderExpression, String.format("order expression for '%s' not found!", sortOrder.getProperty()));
             if (!groupBys.contains(orderExpression) && !isAggregateFunction(orderExpression)) {
                 groupBys.add(orderExpression);
@@ -203,7 +214,7 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-    protected CriteriaQuery<T> createCriteriaQuery(Specification specification, Sort sort) {
+    protected CriteriaQuery<T> createCriteriaQuery(Specification<T> specification, Sort sort) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(selectableInfo.getSelectableClass());
         Root root = query.from(selectableInfo.getRootClass());
@@ -213,13 +224,13 @@ public class SelectableRepositoryImpl<T> implements SelectableRepository<T> {
         return query;
     }
 
-    protected TypedQuery createTypedQuery(Specification spec, Sort sort) {
-        CriteriaQuery query = createCriteriaQuery(spec, sort);
+    protected TypedQuery<T> createTypedQuery(Specification<T> spec, Sort sort) {
+        CriteriaQuery<T> query = createCriteriaQuery(spec, sort);
         return entityManager.createQuery(query);
     }
 
-    protected TypedQuery createTypedQuery(Specification spec, Pageable pageable) {
-        TypedQuery typedQuery = createTypedQuery(spec, pageable == null ? null : pageable.getSort());
+    protected TypedQuery<T> createTypedQuery(Specification<T> spec, Pageable pageable) {
+        TypedQuery<T> typedQuery = createTypedQuery(spec, pageable == null ? null : pageable.getSort());
         if (pageable != null) {
             typedQuery.setFirstResult((int) pageable.getOffset());
             typedQuery.setMaxResults(pageable.getPageSize());

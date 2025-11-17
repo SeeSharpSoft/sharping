@@ -1,4 +1,6 @@
 sharping:
+  expression:
+    dialect: Sql
   selectable:
     enabled: true
     packages: net.seesharpsoft.spring.suite.test.selectable

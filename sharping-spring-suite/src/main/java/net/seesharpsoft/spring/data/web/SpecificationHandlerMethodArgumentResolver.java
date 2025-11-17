@@ -10,6 +10,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SpecificationHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -20,13 +22,15 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
     private String filterParameterName = DEFAULT_FILTER_PARAMETER;
     private String prefix = DEFAULT_PREFIX;
     private String qualifierDelimiter = DEFAULT_QUALIFIER_DELIMITER;
-    private Converter<String, Specification> stringToSpecificationConverter;
-    private Converter<String[], Specification> stringsToSpecificationConverter;
+    private Converter<String, Specification<?>> stringToSpecificationConverter;
+    private Converter<String[], Specification<?>> stringsToSpecificationConverter;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpecificationHandlerMethodArgumentResolver.class);
 
-    public SpecificationHandlerMethodArgumentResolver(Converter<String, Specification> stringToSpecificationConverter) {
+    public SpecificationHandlerMethodArgumentResolver(Converter<String, Specification<?>> stringToSpecificationConverter) {
         Assert.notNull(stringToSpecificationConverter, "String to Specification converter must be provided!");
         this.stringToSpecificationConverter = stringToSpecificationConverter;
         this.stringsToSpecificationConverter = new MultiInput2SpecificationConverter(this.stringToSpecificationConverter);
+        LOGGER.debug("Created SpecificationHandlerMethodArgumentResolver with converter={}", stringToSpecificationConverter);
     }
 
     /**
@@ -37,6 +41,7 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
     public void setFilterParameterName(String filterParameterName) {
 
         Assert.hasText(filterParameterName, "Filter parameter name must not be null or empty!");
+        LOGGER.debug("Setting filterParameterName from '{}' to '{}'", this.filterParameterName, filterParameterName);
         this.filterParameterName = filterParameterName;
     }
 
@@ -56,6 +61,7 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
      * @param prefix the prefix to be used or {@literal null} to reset to the default.
      */
     public void setPrefix(String prefix) {
+        LOGGER.debug("Setting prefix from '{}' to '{}'", this.prefix, prefix);
         this.prefix = prefix == null ? DEFAULT_PREFIX : prefix;
     }
 
@@ -66,6 +72,7 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
      * @param qualifierDelimiter the delimiter to be used or {@literal null} to reset to the default.
      */
     public void setQualifierDelimiter(String qualifierDelimiter) {
+        LOGGER.debug("Setting qualifierDelimiter from '{}' to '{}'", this.qualifierDelimiter, qualifierDelimiter);
         this.qualifierDelimiter = qualifierDelimiter == null ? DEFAULT_QUALIFIER_DELIMITER : qualifierDelimiter;
     }
 
@@ -83,23 +90,39 @@ public class SpecificationHandlerMethodArgumentResolver implements HandlerMethod
             builder.append(methodParameter.getParameterAnnotation(Qualifier.class).value());
             builder.append(qualifierDelimiter);
         }
-        return builder.append(source).toString();
+        String parameterName = builder.append(source).toString();
+        LOGGER.debug("Resolved filter parameter name '{}' for method parameter '{}'",
+                parameterName,
+                methodParameter == null ? "null" : methodParameter.getParameterName());
+        return parameterName;
     }
 
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {
-        return Specification.class.equals(methodParameter.getParameterType());
+        boolean supported = Specification.class.equals(methodParameter.getParameterType());
+        LOGGER.debug("supportsParameter for '{}': {}", methodParameter.getParameterName(), supported);
+        return supported;
     }
 
     @Override
-    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        String[] filterValues = nativeWebRequest.getParameterValues(getParameterNameToUse(getFilterParameterName(), methodParameter));
+    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,
+                                  NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
+        String parameterName = getParameterNameToUse(getFilterParameterName(), methodParameter);
+        String[] filterValues = nativeWebRequest.getParameterValues(parameterName);
 
-        return filterValues == null ?
+        LOGGER.debug("Resolving Specification argument for parameter '{}' using request parameter '{}', values={}",
+                methodParameter.getParameterName(), parameterName, filterValues);
+
+        Object result = filterValues == null ?
                 stringToSpecificationConverter.convert(null) :
                 filterValues.length == 1 ?
                         stringToSpecificationConverter.convert(filterValues[0]) :
                         stringsToSpecificationConverter.convert(filterValues);
+
+        LOGGER.debug("Resolved Specification argument for parameter '{}' -> {}",
+                methodParameter.getParameterName(), result);
+
+        return result;
     }
 
 }
