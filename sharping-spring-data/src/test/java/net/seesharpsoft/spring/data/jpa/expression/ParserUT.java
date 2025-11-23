@@ -78,7 +78,7 @@ public class ParserUT {
         Operand operation = parser.parseExpression("a eq 'eq lt ne' AND (/b. lt 3 or c gt '123' or not (a/b in [test,test2]))");
 
         assertThat(operation, instanceOf(Operation.class));
-        assertThat(operation.toString(), is("(({a} == 'eq lt ne') && (({b} < 3) || (({c} > '123') || ! ({a/b} IN {[test,test2]}))))"));
+        assertThat(operation.toString(), is("(({a} == 'eq lt ne') && (({b} < 3) || (({c} > '123') || !(({a/b} IN {[test,test2]})))))"));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ParserUT {
         Operand operation = parser.parseExpression("not (not (a ne 'eq lt ne' AND (b lt 3 or c gt '123')) or startswith(field,'prefix') and not a/b in [test,test2])");
 
         assertThat(operation, instanceOf(Operation.class));
-        assertThat(operation.toString(), is("! (! (({a} != 'eq lt ne') && (({b} < 3) || ({c} > '123'))) || (({field} startsWith 'prefix') && (! {a/b} IN {[test,test2]})))"));
+        assertThat(operation.toString(), is("!((!((({a} != 'eq lt ne') && (({b} < 3) || ({c} > '123')))) || (({field} startsWith 'prefix') && (!({a/b}) IN {[test,test2]}))))"));
     }
 
     @Test
@@ -114,7 +114,15 @@ public class ParserUT {
         Operand operation = parser.parseExpression("count(a) as countA");
 
         assertThat(operation, instanceOf(Operation.class));
-        assertThat(operation.toString(), is("(count {a} as {countA})"));
+        assertThat(operation.toString(), is("(count({a}) as {countA})"));
     }
 
+    @Test
+    public void parser_should_return_correct_specification_with_lower_and_like() throws ParseException, IllegalAccessException {
+        Parser parser = new Parser(Dialects.ODATA);
+        Operand operation = parser.parseExpression("substring(tolower(a), toupper('sub'))");
+
+        assertThat(operation, instanceOf(Operation.class));
+        assertThat(operation.toString(), is("(lower({a}) includes upper('sub'))"));
+    }
 }

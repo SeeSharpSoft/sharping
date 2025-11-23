@@ -66,7 +66,7 @@ public class Operations {
 
         @Override
         public String toString() {
-            return String.format("%s %s", getOperator(), getOperand());
+            return String.format("%s(%s)", getOperator(), getOperand());
         }
     }
 

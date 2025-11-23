@@ -113,6 +113,9 @@ public class Operators {
         }
     };
 
+    public static final Operator TO_LOWER = new Operators.Unary<String, String>("lower", 100, CriteriaBuilder::lower, String::toLowerCase);
+    public static final Operator TO_UPPER = new Operators.Unary<String, String>("upper", 100, CriteriaBuilder::upper, String::toUpperCase);
+
     public static final Operator GREATER_THAN = new Operators.Binary<Comparable, Comparable, Boolean>(">", 90,
             CriteriaBuilder::greaterThan,
             (x, y) -> compareTo(x, y, r -> r > 0));

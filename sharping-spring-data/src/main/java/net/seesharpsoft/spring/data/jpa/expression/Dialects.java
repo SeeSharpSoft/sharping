@@ -44,15 +44,17 @@ public class Dialects {
         dialect.generateOperatorTokenPattern();
         dialect.addTokenPatterns(
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
-                Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)"),
+                Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)|(tolower|toupper)(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
-                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|null)\\s*\\()|null(\\W|$)|not\\W)[^ !(),\\[\\]]+")
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|tolower|toupper|null)\\s*\\()|null(\\W|$)|not\\W)[^ !(),\\[\\]]+")
         );
         dialect.addOperators(
                 Pair.of("substring", Operators.IS_SUBSTRING),
                 Pair.of("startsWith", Operators.STARTS_WITH),
                 Pair.of("endsWith", Operators.ENDS_WITH),
-                Pair.of("not", Operators.NOT)
+                Pair.of("not", Operators.NOT),
+                Pair.of("tolower", Operators.TO_LOWER),
+                Pair.of("toupper", Operators.TO_UPPER)
         );
         ODATA = dialect;
 
@@ -110,12 +112,14 @@ public class Dialects {
                 Pair.of("endsWith", Operators.ENDS_WITH),
                 Pair.of("if", Operators.IF),
                 Pair.of("count", Operators.COUNT),
+                Pair.of("lower", Operators.TO_LOWER),
+                Pair.of("upper", Operators.TO_UPPER),
                 Pair.of("as", Operators.AS)
         );
         dialect.addTokenPatterns(
                 Pair.of(Token.UNARY_OPERATOR, "[!]"),
                 Pair.of(Token.BINARY_OPERATOR, "==|[!]=|[>]=|[<]=|&&|[|][|]|[+]|[-]|[*]|/|%|[>]|[<]|as(?=\\W)"),
-                Pair.of(Token.UNARY_OPERATOR_METHOD, "count(?=\\s*\\()"),
+                Pair.of(Token.UNARY_OPERATOR_METHOD, "(count|lower|upper)(?=\\s*\\()"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
@@ -151,16 +155,18 @@ public class Dialects {
                 Pair.of("count", Operators.COUNT),
                 Pair.of("count_distinct", Operators.COUNT_DISTINCT),
                 Pair.of("as", Operators.AS),
-                Pair.of("in", Operators.IN)
+                Pair.of("in", Operators.IN),
+                Pair.of("lower", Operators.TO_LOWER),
+                Pair.of("upper", Operators.TO_UPPER)
         );
         dialect.addTokenPatterns(
                 Pair.of(Token.UNARY_OPERATOR, "not(?=\\W)"),
                 Pair.of(Token.BINARY_OPERATOR, "=|[<][>]|[>]=|[<]=|\\|\\||[+]|[-]|[*]|/|%|[>]|[<]|and(?=\\W)|or(?=\\W)|as(?=\\W)|in(?=\\W)"),
-                Pair.of(Token.UNARY_OPERATOR_METHOD, "(count|count_distinct)(?=\\s*\\()"),
+                Pair.of(Token.UNARY_OPERATOR_METHOD, "(count|count_distinct|lower|upper)(?=\\s*\\()"),
                 Pair.of(Token.BINARY_OPERATOR_METHOD, "(startswith|endswith|substring)(?=\\s*\\()"),
                 Pair.of(Token.TERTIARY_OPERATOR_METHOD, "if(?=\\s*\\()"),
                 Pair.of(Token.NULL, "null(?=\\W|$)"),
-                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count|count_distinct)\\s*\\()|null(\\W|$)|not\\W)[^ (),\\[\\]]+")
+                Pair.of(Token.OPERAND, "'.*?'|\\[.+?\\]|(?!((startswith|endswith|substring|if|count|count_distinct|lower|upper)\\s*\\()|null(\\W|$)|not\\W)[^ (),\\[\\]]+")
         );
         SQL = dialect;
     }
