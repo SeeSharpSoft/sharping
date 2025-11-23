@@ -37,7 +37,7 @@ public class BatchRequestE2ETest {
 
         try {
             restTemplate.exchange(
-                    "http://localhost:8080/my/own/multipart/endpoint",
+                    "http://localhost:8079/my/own/multipart/endpoint",
                     HttpMethod.POST,
                     new HttpEntity("--batch\n" +
                             "Content-Type: application/http\n" +
@@ -72,7 +72,7 @@ public class BatchRequestE2ETest {
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<String> result = restTemplate.exchange(
-                "http://localhost:8080/my/own/multipart/endpoint",
+                "http://localhost:8079/my/own/multipart/endpoint",
                 HttpMethod.POST,
                 new HttpEntity("--batch\n" +
                         "Content-Type: application/http\n" +

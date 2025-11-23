@@ -15,7 +15,7 @@ http://www.odata.org/documentation/odata-version-3-0/batch-processing/
 # Example
 
 - startup multipart-example spring-boot:run
-- POST localhost:8080/my/own/multipart/endpoint
+- POST localhost:8079/my/own/multipart/endpoint
 
 **Header**
 ```

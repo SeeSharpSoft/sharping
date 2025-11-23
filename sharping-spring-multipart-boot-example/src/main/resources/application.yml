@@ -1,3 +1,5 @@
+server.port: 8079
+
 sharping.multipart:
   mode: LocalDispatch
   endpoint: /my/own/multipart/endpoint
